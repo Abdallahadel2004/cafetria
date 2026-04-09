@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cafetria | Checks</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- ─── Sidebar ─────────────────────────── -->
+        <aside class="admin-sidebar">
+            <div class="admin-sidebar-header">
+                <div class="logo">
+                    <span class="material-symbols-outlined" style="color: var(--primary);">local_cafe</span>
+                    <span>Cafetria</span>
+                </div>
+                <p class="subtitle">Admin Dashboard</p>
+            </div>
+            <nav class="admin-sidebar-nav">
+                <a href="admin-dashboard.html">
+                    <span class="material-symbols-outlined">space_dashboard</span> Home
+                </a>
+                <a href="admin-orders.html">
+                    <span class="material-symbols-outlined">receipt_long</span> Orders
+                </a>
+                <a href="admin-products.html">
+                    <span class="material-symbols-outlined">inventory_2</span> Products
+                </a>
+                <a href="admin-users.html">
+                    <span class="material-symbols-outlined">group</span> Users
+                </a>
+                <a href="admin-manual-order.html">
+                    <span class="material-symbols-outlined">add_shopping_cart</span> Manual Order
+                </a>
+                <a href="admin-checks.html" class="active">
+                    <span class="material-symbols-outlined">payments</span> Checks
+                </a>
+            </nav>
+            <div class="admin-sidebar-footer">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=admin" alt="Admin" class="avatar">
+                <div class="user-info">
+                    <p class="user-name">Admin User</p>
+                    <p class="user-role">Manager</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ─── Main Content ────────────────────── -->
+        <main class="admin-main-content">
+            <header class="page-header">
+                <div>
+                    <h1>Financial <span class="highlight">Reports</span></h1>
+                    <p>Filter and review billing checks per user.</p>
+                </div>
+            </header>
+
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label>Date From</label>
+                    <input type="date" class="form-control" name="date_from">
+                </div>
+                <div class="filter-group">
+                    <label>Date To</label>
+                    <input type="date" class="form-control" name="date_to">
+                </div>
+                <div class="filter-group">
+                    <label>User</label>
+                    <select class="form-control" name="user_filter">
+                        <option value="">All Users</option>
+                        <!-- PHP will populate users here -->
+                    </select>
+                </div>
+                <button class="btn btn-secondary">
+                    <span class="material-symbols-outlined" style="font-size:1rem;">filter_alt</span>
+                    Filter
+                </button>
+            </div>
+
+            <!-- Checks Table -->
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th style="width:50px;"></th>
+                            <th>Name</th>
+                            <th>Total Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- PHP will populate rows here -->
+                        <!-- Example expandable row:
+                        <tr>
+                            <td class="expand-btn" onclick="toggleRow('check-1')">+</td>
+                            <td>Amelia Rose</td>
+                            <td>EGP 156</td>
+                        </tr>
+                        <tr id="check-1" class="expand-row">
+                            <td colspan="3">
+                                <div style="padding: 1rem;">
+                                    <table class="sub-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Order Date</th>
+                                                <th>Amount</th>
+                                                <th>Items</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>2026-04-09 14:30</td>
+                                                <td>EGP 50</td>
+                                                <td>Coffee (2), Tea (1)</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </td>
+                        </tr>
+                        -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+    <script src="../script.js"></script>
+</body>
+</html>
+
+

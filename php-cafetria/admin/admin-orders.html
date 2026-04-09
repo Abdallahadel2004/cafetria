@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cafetria | Orders</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        /* ── Order Cards ──────────────────────── */
+        .order-cards {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-lg);
+        }
+
+        .order-card {
+            background: var(--surface-container-lowest);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .order-card:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Card Header: meta row */
+        .order-card-header {
+            display: grid;
+            grid-template-columns: 2fr 2fr 1fr 1fr 1fr;
+            gap: 0.5rem;
+            padding: 0.875rem 1.25rem;
+            background: var(--surface-container-low);
+            font-size: 0.8125rem;
+            font-weight: 600;
+            align-items: center;
+        }
+
+        .order-card-header .label {
+            font-size: 0.625rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--on-surface-variant);
+            font-weight: 700;
+        }
+
+        .order-card-header .value {
+            font-weight: 700;
+            color: var(--on-surface);
+        }
+
+        /* Card Body: product thumbnails */
+        .order-card-body {
+            padding: 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .order-items-grid {
+            display: flex;
+            gap: var(--spacing-lg);
+            flex-wrap: wrap;
+        }
+
+        .order-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.375rem;
+            min-width: 80px;
+        }
+
+        .order-item-img-wrapper {
+            width: 72px;
+            height: 72px;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-sm);
+            border: 2px solid var(--surface-container);
+        }
+
+        .order-item-img-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .order-item-price-tag {
+            position: absolute;
+            top: 0.25rem;
+            right: 0.25rem;
+            background: var(--tertiary-container);
+            color: var(--on-tertiary-container);
+            font-size: 0.5625rem;
+            font-weight: 800;
+            padding: 0.125rem 0.375rem;
+            border-radius: var(--radius-full);
+        }
+
+        .order-item-name {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--on-surface);
+        }
+
+        .order-item-qty {
+            font-size: 0.9375rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .order-card-total {
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .order-card-total .total-label {
+            font-size: 0.6875rem;
+            color: var(--on-surface-variant);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .order-card-total .total-value {
+            font-size: 1.25rem;
+            font-weight: 800;
+            font-family: var(--font-headline);
+            color: var(--on-surface);
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- ─── Sidebar ─────────────────────────── -->
+        <aside class="admin-sidebar">
+            <div class="admin-sidebar-header">
+                <div class="logo">
+                    <span class="material-symbols-outlined" style="color: var(--primary);">local_cafe</span>
+                    <span>Cafetria</span>
+                </div>
+                <p class="subtitle">Admin Dashboard</p>
+            </div>
+            <nav class="admin-sidebar-nav">
+                <a href="admin-dashboard.html">
+                    <span class="material-symbols-outlined">space_dashboard</span> Home
+                </a>
+                <a href="admin-orders.html" class="active">
+                    <span class="material-symbols-outlined">receipt_long</span> Orders
+                </a>
+                <a href="admin-products.html">
+                    <span class="material-symbols-outlined">inventory_2</span> Products
+                </a>
+                <a href="admin-users.html">
+                    <span class="material-symbols-outlined">group</span> Users
+                </a>
+                <a href="admin-manual-order.html">
+                    <span class="material-symbols-outlined">add_shopping_cart</span> Manual Order
+                </a>
+                <a href="admin-checks.html">
+                    <span class="material-symbols-outlined">payments</span> Checks
+                </a>
+            </nav>
+            <div class="admin-sidebar-footer">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=admin" alt="Admin" class="avatar">
+                <div class="user-info">
+                    <p class="user-name">Admin User</p>
+                    <p class="user-role">Manager</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ─── Main Content ────────────────────── -->
+        <main class="admin-main-content">
+            <header class="page-header">
+                <div>
+                    <h1>All <span class="highlight">Orders</span></h1>
+                    <p>Review and deliver customer orders.</p>
+                </div>
+            </header>
+
+            <!-- Order Cards -->
+            <div class="order-cards">
+                <!-- PHP will populate order cards here -->
+                <!-- Example order card structure:
+
+                <div class="order-card">
+                    <div class="order-card-header">
+                        <div>
+                            <span class="label">Order Date</span><br>
+                            <span class="value">2015/02/02 10:30 AM</span>
+                        </div>
+                        <div>
+                            <span class="label">Name</span><br>
+                            <span class="value">Abdulrahman Hamdy</span>
+                        </div>
+                        <div>
+                            <span class="label">Room</span><br>
+                            <span class="value">2006</span>
+                        </div>
+                        <div>
+                            <span class="label">Ext.</span><br>
+                            <span class="value">6506</span>
+                        </div>
+                        <div>
+                            <span class="label">Action</span><br>
+                            <button class="btn btn-primary btn-sm">
+                                <span class="material-symbols-outlined" style="font-size:0.875rem;">local_shipping</span>
+                                Deliver
+                            </button>
+                        </div>
+                    </div>
+                    <div class="order-card-body">
+                        <div class="order-items-grid">
+
+                            <div class="order-item">
+                                <div class="order-item-img-wrapper">
+                                    <img src="uploads/tea.jpg" alt="Tea">
+                                    <span class="order-item-price-tag">5 LE</span>
+                                </div>
+                                <span class="order-item-name">Tea</span>
+                                <span class="order-item-qty">2</span>
+                            </div>
+
+                            <div class="order-item">
+                                <div class="order-item-img-wrapper">
+                                    <img src="uploads/coffee.jpg" alt="Coffee">
+                                    <span class="order-item-price-tag">6 LE</span>
+                                </div>
+                                <span class="order-item-name">Coffee</span>
+                                <span class="order-item-qty">1</span>
+                            </div>
+
+                            <div class="order-item">
+                                <div class="order-item-img-wrapper">
+                                    <img src="uploads/nescafe.jpg" alt="Nescafe">
+                                    <span class="order-item-price-tag">8 LE</span>
+                                </div>
+                                <span class="order-item-name">Nescafe</span>
+                                <span class="order-item-qty">1</span>
+                            </div>
+
+                            <div class="order-item">
+                                <div class="order-item-img-wrapper">
+                                    <img src="uploads/cola.jpg" alt="Cola">
+                                    <span class="order-item-price-tag">10 LE</span>
+                                </div>
+                                <span class="order-item-name">Cola</span>
+                                <span class="order-item-qty">1</span>
+                            </div>
+
+                        </div>
+                        <div class="order-card-total">
+                            <span class="total-label">Total</span><br>
+                            <span class="total-value">EGP 34</span>
+                        </div>
+                    </div>
+                </div>
+
+                -->
+            </div>
+        </main>
+    </div>
+    <script src="../script.js"></script>
+</body>
+</html>
+

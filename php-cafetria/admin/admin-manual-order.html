@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cafetria | Manual Order</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- ─── Sidebar ─────────────────────────── -->
+        <aside class="admin-sidebar">
+            <div class="admin-sidebar-header">
+                <div class="logo">
+                    <span class="material-symbols-outlined" style="color: var(--primary);">local_cafe</span>
+                    <span>Cafetria</span>
+                </div>
+                <p class="subtitle">Admin Dashboard</p>
+            </div>
+            <nav class="admin-sidebar-nav">
+                <a href="admin-dashboard.html">
+                    <span class="material-symbols-outlined">space_dashboard</span> Home
+                </a>
+                <a href="admin-orders.html">
+                    <span class="material-symbols-outlined">receipt_long</span> Orders
+                </a>
+                <a href="admin-products.html">
+                    <span class="material-symbols-outlined">inventory_2</span> Products
+                </a>
+                <a href="admin-users.html">
+                    <span class="material-symbols-outlined">group</span> Users
+                </a>
+                <a href="admin-manual-order.html" class="active">
+                    <span class="material-symbols-outlined">add_shopping_cart</span> Manual Order
+                </a>
+                <a href="admin-checks.html">
+                    <span class="material-symbols-outlined">payments</span> Checks
+                </a>
+            </nav>
+            <div class="admin-sidebar-footer">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=admin" alt="Admin" class="avatar">
+                <div class="user-info">
+                    <p class="user-name">Admin User</p>
+                    <p class="user-role">Manager</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ─── Main Content ────────────────────── -->
+        <main class="admin-main-content">
+            <div class="admin-topbar">
+                <h1 class="page-title">Manual <span class="highlight">Order</span></h1>
+            </div>
+
+            <div class="order-layout">
+                <!-- ── Left: Order Cart ─────────── -->
+                <aside class="order-cart">
+                    <h2>
+                        <span class="material-symbols-outlined" style="font-size:1.25rem; vertical-align: -3px; margin-right: 0.25rem;">receipt_long</span>
+                        Active Order
+                    </h2>
+
+                    <!-- Assign to User -->
+                    <div class="form-group">
+                        <label class="form-label">
+                            <span class="material-symbols-outlined" style="font-size:0.875rem; vertical-align: -2px;">person_search</span>
+                            Assign to User
+                        </label>
+                        <select class="form-control" name="user_id">
+                            <!-- PHP will populate users here -->
+                            <option value="">Select a user...</option>
+                        </select>
+                    </div>
+
+                    <!-- Cart Items -->
+                    <div id="cartItems">
+                        <!-- JS/PHP will populate cart items here -->
+                        <!-- Example structure:
+                        <div class="cart-item">
+                            <div>
+                                <span class="cart-item-name">Coffee</span>
+                                <span class="cart-item-price">EGP 25</span>
+                            </div>
+                            <div class="qty-controls">
+                                <button class="qty-btn">−</button>
+                                <span class="qty-value">1</span>
+                                <button class="qty-btn add">+</button>
+                            </div>
+                        </div>
+                        -->
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="notes-block" style="margin-top: var(--spacing-md);">
+                        <div class="notes-label">
+                            <span class="material-symbols-outlined" style="font-size:0.875rem;">edit_note</span>
+                            Order Notes
+                        </div>
+                        <textarea class="form-control" name="notes" rows="2" placeholder="Any special requests..." style="margin-top: 0.5rem;"></textarea>
+                    </div>
+
+                    <!-- Room + Total -->
+                    <div style="margin-top: var(--spacing-md);">
+                        <div class="form-group">
+                            <label class="form-label">Room</label>
+                            <select class="form-control" name="room">
+                                <!-- PHP will populate rooms here -->
+                                <option value="">Select room...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="cart-total">
+                        <div class="cart-total-row">
+                            <span class="cart-total-label">Total</span>
+                            <span class="cart-total-value" id="totalPrice">EGP 0</span>
+                        </div>
+                        <button class="btn btn-primary btn-lg full-width" style="margin-top: var(--spacing-md);">
+                            <span class="material-symbols-outlined" style="font-size:1.125rem;">check_circle</span>
+                            Confirm Order
+                        </button>
+                    </div>
+                </aside>
+
+                <!-- ── Right: Product Grid ──────── -->
+                <section>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-lg);">
+                        <div>
+                            <h2 style="font-size: 1.5rem; font-weight: 800;">Select Beverages</h2>
+                            <p style="color: var(--on-surface-variant); font-size: 0.875rem;">Browse available items</p>
+                        </div>
+                        <div class="category-tabs">
+                            <button class="category-tab active">All</button>
+                            <button class="category-tab">Hot</button>
+                            <button class="category-tab">Cold</button>
+                        </div>
+                    </div>
+
+                    <div class="product-grid">
+                        <!-- PHP will populate product cards here -->
+                        <!-- Example card structure:
+                        <div class="product-card">
+                            <div class="img-wrapper">
+                                <img src="tea.jpg" class="product-img" alt="Tea">
+                                <span class="price-badge">25 LE</span>
+                            </div>
+                            <div class="product-body">
+                                <div>
+                                    <h4 class="product-name">Tea</h4>
+                                    <p class="product-desc">Classic Black Brew</p>
+                                </div>
+                                <button class="add-btn">
+                                    <span class="material-symbols-outlined">add</span>
+                                </button>
+                            </div>
+                        </div>
+                        -->
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+    <script src="../script.js"></script>
+</body>
+</html>
+
+

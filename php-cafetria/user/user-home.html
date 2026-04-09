@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cafetria | Make an Order</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <!-- ─── User Top Navbar ─────────────────────── -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">
+                <span class="material-symbols-outlined" style="color: var(--primary);">local_cafe</span>
+                <span>Cafetria</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="user-home.html" class="active">Home</a></li>
+                <li><a href="user-orders.html">My Orders</a></li>
+            </ul>
+            <div class="user-profile">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=user" alt="User" class="avatar">
+                <div class="user-info">
+                    <!-- PHP will populate the logged-in user here -->
+                    <p class="user-name">User</p>
+                    <p class="user-role">Customer</p>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ─── Main Content ────────────────────────── -->
+    <main class="container" style="padding-top: var(--spacing-lg); padding-bottom: var(--spacing-xl);">
+        <div class="order-layout">
+            <!-- ── Left: Cart Panel ─────────────── -->
+            <aside class="order-cart">
+                <h2>
+                    <span class="material-symbols-outlined" style="font-size:1.25rem; vertical-align:-3px; margin-right:0.25rem;">shopping_cart</span>
+                    Your Order
+                </h2>
+
+                <!-- Cart Items -->
+                <div id="cartItems">
+                    <!-- JS/PHP will populate cart items here -->
+                    <!-- Example structure:
+                    <div class="cart-item">
+                        <div>
+                            <span class="cart-item-name">Coffee</span><br>
+                            <span class="cart-item-price">EGP 25 each</span>
+                        </div>
+                        <div class="qty-controls">
+                            <button class="qty-btn">−</button>
+                            <span class="qty-value">1</span>
+                            <button class="qty-btn add">+</button>
+                        </div>
+                    </div>
+                    -->
+                </div>
+
+                <!-- Notes -->
+                <div style="margin-top: var(--spacing-md);">
+                    <label class="form-label">
+                        <span class="material-symbols-outlined" style="font-size:0.875rem; vertical-align:-2px;">edit_note</span>
+                        Notes
+                    </label>
+                    <textarea class="form-control" name="notes" rows="2" placeholder="Any special requests..."></textarea>
+                </div>
+
+                <!-- Room -->
+                <div style="margin-top: var(--spacing-md);">
+                    <label class="form-label">Delivery Room</label>
+                    <select class="form-control" name="room">
+                        <option value="">Select room...</option>
+                        <!-- PHP will populate rooms here -->
+                    </select>
+                </div>
+
+                <!-- Total + Submit -->
+                <div class="cart-total">
+                    <div class="cart-total-row">
+                        <span class="cart-total-label">Total</span>
+                        <span class="cart-total-value" id="totalPrice">EGP 0</span>
+                    </div>
+                    <button class="btn btn-primary btn-lg full-width" style="margin-top: var(--spacing-md);">
+                        <span class="material-symbols-outlined" style="font-size:1.125rem;">check_circle</span>
+                        Confirm Order
+                    </button>
+                </div>
+            </aside>
+
+            <!-- ── Right: Menu ──────────────────── -->
+            <section>
+                <!-- Quick Reorder -->
+                <div class="quick-reorder">
+                    <div>
+                        <h3 style="font-size: 0.9375rem; font-weight: 700; margin-bottom: 0.125rem;">
+                            <span class="material-symbols-outlined" style="font-size:1rem; vertical-align:-2px; color: var(--primary);">bolt</span>
+                            Quick Reorder (Latest)
+                        </h3>
+                        <!-- PHP will populate with last order summary -->
+                        <p style="font-size: 0.8125rem; color: var(--on-surface-variant);">No recent orders yet.</p>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" style="display:none;">
+                        <span class="material-symbols-outlined" style="font-size:0.875rem;">replay</span>
+                        Add to Cart
+                    </button>
+                </div>
+
+                <!-- Category Tabs -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-lg);">
+                    <div>
+                        <h2 style="font-size: 1.5rem; font-weight: 800;">Available Items</h2>
+                        <p style="color: var(--on-surface-variant); font-size: 0.875rem;">Tap an item to add it to your cart</p>
+                    </div>
+                    <div class="category-tabs">
+                        <button class="category-tab active">All</button>
+                        <button class="category-tab">Hot</button>
+                        <button class="category-tab">Cold</button>
+                    </div>
+                </div>
+
+                <!-- Product Grid -->
+                <div class="product-grid">
+                    <!-- PHP will populate product cards here -->
+                    <!-- Example card structure:
+                    <div class="product-card" onclick="addToCart(this)">
+                        <div class="img-wrapper">
+                            <img src="tea.jpg" class="product-img" alt="Tea">
+                            <span class="price-badge">25 LE</span>
+                        </div>
+                        <div class="product-body">
+                            <div>
+                                <h4 class="product-name">Tea</h4>
+                                <p class="product-desc">Classic Black Brew</p>
+                            </div>
+                            <button class="add-btn">
+                                <span class="material-symbols-outlined">add</span>
+                            </button>
+                        </div>
+                    </div>
+                    -->
+                </div>
+            </section>
+        </div>
+    </main>
+    <script src="../script.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cafetria | Register User</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- ─── Sidebar ─────────────────────────── -->
+        <aside class="admin-sidebar">
+            <div class="admin-sidebar-header">
+                <div class="logo">
+                    <span class="material-symbols-outlined" style="color: var(--primary);">local_cafe</span>
+                    <span>Cafetria</span>
+                </div>
+                <p class="subtitle">Admin Dashboard</p>
+            </div>
+            <nav class="admin-sidebar-nav">
+                <a href="admin-dashboard.html">
+                    <span class="material-symbols-outlined">space_dashboard</span> Home
+                </a>
+                <a href="admin-orders.html">
+                    <span class="material-symbols-outlined">receipt_long</span> Orders
+                </a>
+                <a href="admin-products.html">
+                    <span class="material-symbols-outlined">inventory_2</span> Products
+                </a>
+                <a href="admin-users.html" class="active">
+                    <span class="material-symbols-outlined">group</span> Users
+                </a>
+                <a href="admin-manual-order.html">
+                    <span class="material-symbols-outlined">add_shopping_cart</span> Manual Order
+                </a>
+                <a href="admin-checks.html">
+                    <span class="material-symbols-outlined">payments</span> Checks
+                </a>
+            </nav>
+            <div class="admin-sidebar-footer">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=admin" alt="Admin" class="avatar">
+                <div class="user-info">
+                    <p class="user-name">Admin User</p>
+                    <p class="user-role">Manager</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ─── Main Content ────────────────────── -->
+        <main class="admin-main-content">
+            <header class="page-header">
+                <div>
+                    <h1>Register New <span class="highlight">Account</span></h1>
+                    <p>Create a new staff or user account.</p>
+                </div>
+            </header>
+
+            <div class="form-container">
+                <form method="POST" action="" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" name="name" class="form-control" placeholder="User's full name" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email Address</label>
+                        <input type="email" name="email" class="form-control" placeholder="user@cafetria.com" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Password</label>
+                            <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Confirm Password</label>
+                            <input type="password" name="password_confirm" class="form-control" placeholder="••••••••" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Room No.</label>
+                            <select name="room" class="form-control">
+                                <option value="">Select room...</option>
+                                <!-- PHP will populate rooms here -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Extension</label>
+                            <input type="text" name="ext" class="form-control" placeholder="e.g. 1024">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Profile Picture</label>
+                        <input type="file" name="image" class="form-control" accept="image/*">
+                    </div>
+
+                    <div class="form-actions">
+                        <a href="admin-users.html" class="btn btn-outline">
+                            <span class="material-symbols-outlined" style="font-size:1rem;">arrow_back</span>
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <span class="material-symbols-outlined" style="font-size:1rem;">person_add</span>
+                            Create Account
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+    <script src="../script.js"></script>
+</body>
+</html>
+
+

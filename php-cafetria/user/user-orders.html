@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cafetria | My Orders</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <!-- ─── User Top Navbar ─────────────────────── -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">
+                <span class="material-symbols-outlined" style="color: var(--primary);">local_cafe</span>
+                <span>Cafetria</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="user-home.html">Home</a></li>
+                <li><a href="user-orders.html" class="active">My Orders</a></li>
+            </ul>
+            <div class="user-profile">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=user" alt="User" class="avatar">
+                <div class="user-info">
+                    <!-- PHP will populate the logged-in user here -->
+                    <p class="user-name">User</p>
+                    <p class="user-role">Customer</p>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ─── Main Content ────────────────────────── -->
+    <main class="container" style="padding-top: var(--spacing-lg); padding-bottom: var(--spacing-xl);">
+        <header class="page-header">
+            <div>
+                <h1>My <span class="highlight">Orders</span></h1>
+                <p>View your order history and track statuses.</p>
+            </div>
+        </header>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <div class="filter-group">
+                <label>Date From</label>
+                <input type="date" class="form-control" name="date_from">
+            </div>
+            <div class="filter-group">
+                <label>Date To</label>
+                <input type="date" class="form-control" name="date_to">
+            </div>
+            <button class="btn btn-secondary">
+                <span class="material-symbols-outlined" style="font-size:1rem;">filter_alt</span>
+                Filter
+            </button>
+        </div>
+
+        <!-- Orders Table -->
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width:50px;"></th>
+                        <th>Order Date</th>
+                        <th>Items</th>
+                        <th>Room</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- PHP will populate rows here -->
+                    <!-- Example expandable row:
+                    <tr>
+                        <td class="expand-btn" onclick="toggleRow('order-1')">+</td>
+                        <td>2026-04-09 14:55</td>
+                        <td>2x Coffee, 1x Tea</td>
+                        <td>Room 201</td>
+                        <td>EGP 75</td>
+                        <td><span class="badge badge-processing">Processing</span></td>
+                        <td><button class="btn btn-danger btn-sm">Cancel</button></td>
+                    </tr>
+                    <tr id="order-1" class="expand-row">
+                        <td colspan="7">
+                            <div style="padding: 1rem;">
+                                <table class="sub-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Item</th>
+                                            <th>Qty</th>
+                                            <th>Price</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Coffee</td>
+                                            <td>2</td>
+                                            <td>EGP 50</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Tea</td>
+                                            <td>1</td>
+                                            <td>EGP 25</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <div class="notes-block" style="margin-top: 0.75rem;">
+                                    <div class="notes-label">
+                                        <span class="material-symbols-outlined" style="font-size:0.875rem;">edit_note</span>
+                                        Notes
+                                    </div>
+                                    <p class="notes-text">"Extra sugar in the tea"</p>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+    <script src="../script.js"></script>
+</body>
+</html>
+

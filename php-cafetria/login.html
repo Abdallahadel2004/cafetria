@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cafetria | Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, rgba(75, 36, 10, 0.5), rgba(163, 55, 0, 0.6)),
+                        url('https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=1600&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--spacing-lg);
+        }
+
+        .login-card {
+            background: rgba(255, 244, 240, 0.96);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            padding: var(--spacing-xl);
+            border-radius: var(--radius-xl);
+            width: 100%;
+            max-width: 420px;
+            box-shadow: var(--shadow-xl);
+            text-align: center;
+        }
+
+        .login-logo {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-container));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto var(--spacing-md);
+            box-shadow: 0 8px 24px rgba(163, 55, 0, 0.25);
+        }
+
+        .login-logo .material-symbols-outlined {
+            font-size: 2rem;
+            color: white;
+        }
+
+        .login-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 0.25rem;
+        }
+
+        .login-subtitle {
+            color: var(--on-surface-variant);
+            font-size: 0.875rem;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .login-form {
+            text-align: left;
+        }
+
+        .forget-link {
+            display: block;
+            text-align: center;
+            margin-top: var(--spacing-md);
+            font-size: 0.8125rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .forget-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="login-logo">
+            <span class="material-symbols-outlined">local_cafe</span>
+        </div>
+        <h1 class="login-title">Welcome Back</h1>
+        <p class="login-subtitle">Sign in to your Cafetria account</p>
+
+        <form class="login-form" method="POST" action="">
+            <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <input type="email" name="email" class="form-control" placeholder="you@cafetria.com" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg full-width" style="margin-top: var(--spacing-sm);">
+                <span class="material-symbols-outlined" style="font-size: 1.125rem;">login</span>
+                Login
+            </button>
+            <a href="#" class="forget-link">Forgot Password?</a>
+        </form>
+    </div>
+</body>
+</html>
