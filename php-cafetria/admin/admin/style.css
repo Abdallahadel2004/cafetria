@@ -1,0 +1,443 @@
+/* ══════════════════════════════════════════════
+   Cafetria — Shared Design System
+   Used by all admin and user pages
+   ══════════════════════════════════════════════ */
+
+:root {
+  --primary: #a33700;
+  --primary-hover: #8a2e00;
+  --primary-container: #ff7943;
+  --surface: #fff4f0;
+  --surface-low: #ffede5;
+  --surface-lowest: #ffffff;
+  --on-surface: #4b240a;
+  --on-surface-variant: #805032;
+  --secondary: #176a21;
+  --tertiary-container: #feb300;
+  --error: #b31b25;
+  --sidebar-width: 280px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Be Vietnam Pro', sans-serif;
+  background: var(--surface);
+  color: var(--on-surface);
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: var(--sidebar-width);
+  background: var(--surface-low);
+  border-right: 1px solid #e8c9b8;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 100;
+}
+.sidebar-brand {
+  padding: 1.5rem 1.5rem 1rem;
+  border-bottom: 1px solid #e8c9b8;
+}
+.sidebar-brand h1 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--primary), var(--primary-container));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.sidebar-brand p {
+  font-size: 0.75rem;
+  color: var(--on-surface-variant);
+  margin-top: 2px;
+  font-weight: 400;
+}
+.sidebar-nav {
+  flex: 1;
+  padding: 1rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.nav-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--on-surface-variant);
+  padding: 0.5rem 0.75rem 0.25rem;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0.65rem 0.875rem;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--on-surface-variant);
+  text-decoration: none;
+}
+.nav-item:hover { background: #f4d8c8; color: var(--on-surface); }
+.nav-item.active { background: var(--primary); color: #fff; }
+.nav-item .material-symbols-outlined {
+  font-size: 20px;
+  font-variation-settings: 'FILL' 0, 'wght' 400;
+}
+.nav-item.active .material-symbols-outlined {
+  font-variation-settings: 'FILL' 1, 'wght' 400;
+}
+.sidebar-user {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid #e8c9b8;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.user-avatar {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--primary-container));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.8rem; font-weight: 700; color: #fff;
+  flex-shrink: 0;
+}
+.user-info p    { font-size: 0.85rem; font-weight: 600; color: var(--on-surface); }
+.user-info span { font-size: 0.72rem; color: var(--on-surface-variant); }
+
+/* ── MAIN LAYOUT ── */
+.main {
+  margin-left: var(--sidebar-width);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.topbar {
+  background: var(--surface-lowest);
+  border-bottom: 1px solid #e8c9b8;
+  padding: 1rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.topbar h2 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--on-surface);
+}
+.topbar-actions { display: flex; align-items: center; gap: 12px; }
+.page-content   { padding: 2rem; }
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 0.5rem 1.1rem;
+  border-radius: 0.625rem;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 0.85rem; font-weight: 500;
+  cursor: pointer; border: none;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, #c44200 100%);
+  color: #fff;
+}
+.btn-primary:hover { background: linear-gradient(135deg, var(--primary-hover), #a33700); transform: translateY(-1px); }
+.btn-secondary {
+  background: var(--surface-low);
+  color: var(--on-surface);
+  border: 1px solid #e8c9b8;
+}
+.btn-secondary:hover { background: #f4d8c8; }
+.btn-danger { background: none; color: var(--error); border: 1px solid var(--error); }
+.btn-danger:hover { background: var(--error); color: #fff; }
+.btn-sm { padding: 0.3rem 0.75rem; font-size: 0.78rem; }
+.btn .material-symbols-outlined { font-size: 17px; }
+
+/* ── STAT CARDS ── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.stat-card {
+  background: var(--surface-lowest);
+  border: 1px solid #e8c9b8;
+  border-radius: 1.25rem;
+  padding: 1.25rem;
+  position: relative;
+  overflow: hidden;
+}
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary), var(--primary-container));
+}
+.stat-icon {
+  width: 40px; height: 40px;
+  border-radius: 0.75rem;
+  background: var(--surface-low);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 0.75rem;
+}
+.stat-icon .material-symbols-outlined { font-size: 20px; color: var(--primary); font-variation-settings: 'FILL' 1; }
+.stat-value {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.75rem; font-weight: 800;
+  color: var(--on-surface);
+  line-height: 1; margin-bottom: 4px;
+}
+.stat-label  { font-size: 0.78rem; color: var(--on-surface-variant); font-weight: 400; }
+.stat-change {
+  display: inline-flex; align-items: center; gap: 2px;
+  font-size: 0.72rem; font-weight: 600;
+  padding: 2px 6px; border-radius: 999px; margin-top: 6px;
+}
+.stat-change.up   { background: #dcf5e0; color: #176a21; }
+.stat-change.down { background: #fde8e9; color: var(--error); }
+
+/* ── SECTION CARD ── */
+.section-card {
+  background: var(--surface-lowest);
+  border: 1px solid #e8c9b8;
+  border-radius: 1.25rem;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+.section-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #f0ddd4;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.section-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1rem; font-weight: 700;
+  color: var(--on-surface);
+  display: flex; align-items: center; gap: 8px;
+}
+.section-title .material-symbols-outlined { font-size: 20px; color: var(--primary); font-variation-settings: 'FILL' 1; }
+
+/* ── TABLE ── */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+thead th {
+  background: var(--surface);
+  padding: 0.75rem 1.25rem;
+  text-align: left;
+  font-size: 0.72rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.07em;
+  color: var(--on-surface-variant);
+}
+tbody tr { border-bottom: 1px solid #f5e8e0; transition: background 0.15s; }
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: #fff8f5; }
+tbody td { padding: 0.875rem 1.25rem; color: var(--on-surface); vertical-align: middle; }
+
+/* ── BADGES ── */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 999px;
+  font-size: 0.72rem; font-weight: 600;
+}
+.badge-processing  { background: #fff3d0; color: #7a5200; }
+.badge-delivered   { background: #e8e8e8; color: #444; }
+.badge-available   { background: #dcf5e0; color: #176a21; }
+.badge-unavailable { background: #fde8e9; color: var(--error); }
+.badge-cancelled   { background: #f0e8f8; color: #5a1fa0; }
+.badge-category    { background: #f5e8dc; color: var(--on-surface); }
+
+/* ── PRODUCT GRID ── */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.25rem;
+  padding: 1.25rem;
+}
+.product-card {
+  background: var(--surface-lowest);
+  border: 1px solid #e8c9b8;
+  border-radius: 1.25rem;
+  overflow: hidden;
+  transition: all 0.25s;
+}
+.product-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(163,55,0,0.12); }
+.product-img-wrap {
+  position: relative; height: 140px;
+  background: var(--surface-low);
+  display: flex; align-items: center; justify-content: center;
+}
+.product-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+.product-img-placeholder { font-size: 3rem; }
+.price-badge {
+  position: absolute; top: 10px; right: 10px;
+  background: var(--tertiary-container);
+  color: #4a3000;
+  font-size: 0.75rem; font-weight: 700;
+  padding: 3px 10px; border-radius: 999px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.product-body     { padding: 1rem; }
+.product-name     { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.95rem; font-weight: 700; color: var(--on-surface); margin-bottom: 4px; }
+.product-category { font-size: 0.72rem; color: var(--on-surface-variant); margin-bottom: 0.75rem; }
+.product-footer   { display: flex; align-items: center; justify-content: space-between; }
+.product-actions  { display: flex; gap: 6px; }
+
+/* ── LOADING / SPINNER ── */
+.loading-state {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 3rem; gap: 1rem;
+  color: var(--on-surface-variant);
+}
+.spinner {
+  width: 32px; height: 32px;
+  border: 3px solid #f0ddd4;
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-size: 0.85rem; color: var(--on-surface-variant); }
+
+/* ── AI CHIP ── */
+.ai-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: linear-gradient(135deg, #fff4f0, #ffede5);
+  border: 1px solid #f5c9a8; border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 0.72rem; font-weight: 600; color: var(--primary);
+}
+
+/* ── AI INSIGHT BOX ── */
+.ai-insight {
+  background: linear-gradient(135deg, #fff8f5 0%, #fff4ef 100%);
+  border: 1px solid #f5c9a8;
+  border-radius: 1rem;
+  padding: 1rem 1.25rem;
+  margin: 1.25rem; margin-top: 0;
+}
+.ai-insight-header {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.78rem; font-weight: 600;
+  color: var(--primary); margin-bottom: 6px;
+}
+.ai-insight-header .material-symbols-outlined { font-size: 16px; font-variation-settings: 'FILL' 1; }
+.ai-insight p { font-size: 0.85rem; color: var(--on-surface); line-height: 1.6; }
+
+/* ── MODAL ── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 999;
+  align-items: center; justify-content: center;
+  padding: 1rem;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--surface-lowest);
+  border-radius: 1.5rem;
+  padding: 2rem;
+  width: 100%; max-width: 520px;
+}
+.modal h3 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.15rem; font-weight: 700;
+  margin-bottom: 1.25rem; color: var(--on-surface);
+}
+.form-group   { margin-bottom: 1rem; }
+.form-label   { display: block; font-size: 0.8rem; font-weight: 600; color: var(--on-surface-variant); margin-bottom: 6px; }
+.form-control {
+  width: 100%; padding: 0.65rem 0.875rem;
+  border: 1px solid #e8c9b8; border-radius: 0.75rem;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 0.875rem; color: var(--on-surface);
+  background: var(--surface); outline: none;
+  transition: border-color 0.2s;
+}
+.form-control:focus { border-color: var(--primary); }
+.form-row      { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 1.5rem; }
+
+/* ── SEARCH / FILTER ── */
+.search-wrap  { position: relative; display: flex; align-items: center; }
+.search-icon  { position: absolute; left: 10px; font-size: 18px; color: var(--on-surface-variant); }
+.search-input {
+  padding: 0.5rem 0.875rem 0.5rem 2.25rem;
+  border: 1px solid #e8c9b8; border-radius: 0.75rem;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 0.85rem; color: var(--on-surface);
+  background: var(--surface); outline: none; width: 220px;
+  transition: border-color 0.2s;
+}
+.search-input:focus { border-color: var(--primary); }
+.filter-select {
+  padding: 0.45rem 0.75rem;
+  border: 1px solid #e8c9b8; border-radius: 0.75rem;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 0.82rem; color: var(--on-surface);
+  background: var(--surface); outline: none;
+}
+
+/* ── LIVE INDICATOR ── */
+.live-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #176a21;
+  animation: pulse 1.5s ease-in-out infinite;
+  display: inline-block;
+}
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+/* ── ORDER CARDS ── */
+.orders-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.25rem;
+}
+.order-card {
+  background: var(--surface-lowest);
+  border: 1px solid #e8c9b8;
+  border-radius: 1.25rem; overflow: hidden;
+  transition: all 0.2s;
+}
+.order-card:hover { box-shadow: 0 4px 16px rgba(163,55,0,0.1); }
+.order-card-header {
+  padding: 1rem 1.25rem;
+  background: var(--surface);
+  border-bottom: 1px solid #f0ddd4;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.order-number { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.9rem; font-weight: 700; color: var(--primary); }
+.order-card-body { padding: 1rem 1.25rem; }
+.order-meta { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: var(--on-surface-variant); margin-bottom: 6px; }
+.order-meta .material-symbols-outlined { font-size: 15px; }
+.order-items { font-size: 0.82rem; color: var(--on-surface); margin: 0.75rem 0; line-height: 1.5; }
+.order-total {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.1rem; font-weight: 800; color: var(--on-surface);
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 0.75rem; padding-top: 0.75rem;
+  border-top: 1px solid #f0ddd4;
+}
+
+/* ── VIEW TOGGLE ── */
+.view-toggle { display: flex; border: 1px solid #e8c9b8; border-radius: 0.75rem; overflow: hidden; }
+.view-btn    { padding: 0.4rem 0.75rem; border: none; background: none; cursor: pointer; color: var(--on-surface-variant); transition: all 0.2s; }
+.view-btn.active { background: var(--primary); color: #fff; }
+.view-btn .material-symbols-outlined { font-size: 18px; }
