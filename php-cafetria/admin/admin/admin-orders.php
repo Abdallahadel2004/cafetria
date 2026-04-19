@@ -10,10 +10,10 @@
  */
 session_start();
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    header('Location: ../login.html'); exit;
+    header('Location: ../../login.php'); exit;
 }
 
-require_once '../db.php';
+require_once __DIR__ . '/../../db.php';
 
 // ── Optional server-side status filter from URL (?status=Processing) ──────
 $allowedStatuses = ['Processing', 'Delivered', 'Cancelled'];
@@ -61,7 +61,7 @@ $activePage = 'orders';
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
-<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -96,27 +96,13 @@ $activePage = 'orders';
                 </button>
             </div>
 
-            <button class="btn btn-primary btn-sm" onclick="runOrdersAI()">
-                <span class="material-symbols-outlined">auto_awesome</span>AI Analysis
-            </button>
+
         </div>
     </div>
 
     <div class="page-content">
 
-        <!-- AI Analysis Box (hidden until requested) -->
-        <div class="section-card" id="orders-ai-box" style="display:none">
-            <div class="section-header">
-                <div class="section-title">
-                    <span class="material-symbols-outlined">auto_awesome</span>AI Orders Analysis
-                </div>
-                <button class="btn btn-secondary btn-sm"
-                        onclick="document.getElementById('orders-ai-box').style.display='none'">
-                    Close
-                </button>
-            </div>
-            <div id="orders-ai-content" style="padding:1.25rem;font-size:0.875rem;line-height:1.7;color:var(--on-surface)"></div>
-        </div>
+
 
         <!-- ── Table View ──────────────────────────────── -->
         <div class="section-card" id="orders-table-view">
@@ -241,10 +227,7 @@ $activePage = 'orders';
     </div><!-- /page-content -->
 </main>
 
-<!-- Pass today's stats to JS for AI context -->
-<script>
-const ORDERS_STATS = <?= json_encode($stats) ?>;
-</script>
+
 <script src="admin.js"></script>
 </body>
 </html>

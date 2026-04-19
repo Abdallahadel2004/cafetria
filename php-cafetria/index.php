@@ -1,7 +1,7 @@
 <?php
 session_start();
 if (isset($_SESSION['user_id'])) {
-    header('Location: ' . ($_SESSION['role'] === 'admin' ? 'admin/admin-dashboard.php' : 'user/user-home.php'));
+    header('Location: ' . ($_SESSION['role'] === 'admin' ? 'admin/admin-dashboard.php' : 'api_login_and_UserPages/user-home.php'));
     exit;
 }
 ?>
@@ -190,54 +190,78 @@ if (isset($_SESSION['user_id'])) {
     <script>
     const c = document.getElementById('c'),
         ctx = c.getContext('2d');
-    let W, H, pts = [];
+    let W, H;
+    const frames = [];
+    const totalFrames = 238;
+    let currentFrame = 1;
+    let loadedCount = 0;
+    let isLoaded = false;
 
     function resize() {
         W = c.width = innerWidth;
         H = c.height = innerHeight;
     }
 
-    function init() {
-        pts = Array.from({
-            length: 40
-        }, () => ({
-            x: Math.random() * W,
-            y: Math.random() * H,
-            r: Math.random() * 1.4 + .3,
-            vx: (Math.random() - .5) * .14,
-            vy: (Math.random() - .5) * .14,
-            o: Math.random() * .28 + .05,
-        }));
+    // Preload frames
+    function preload() {
+        for (let i = 1; i <= totalFrames; i++) {
+            const img = new Image();
+            const frameNum = i.toString().padStart(3, '0');
+            img.src = `frames/ezgif-frame-${frameNum}.jpg`;
+            img.onload = () => {
+                loadedCount++;
+                if (loadedCount > 30) isLoaded = true; // Start early for smooth feel
+            };
+            frames[i] = img;
+        }
     }
 
     function draw() {
-        ctx.clearRect(0, 0, W, H);
-        const g = ctx.createRadialGradient(W * .5, H * .44, 0, W * .5, H * .44, W * .72);
-        g.addColorStop(0, 'rgba(46,31,13,.88)');
-        g.addColorStop(1, 'rgba(10,7,3,1)');
-        ctx.fillStyle = g;
-        ctx.fillRect(0, 0, W, H);
-        pts.forEach(p => {
-            p.x += p.vx;
-            p.y += p.vy;
-            if (p.x < 0) p.x = W;
-            if (p.x > W) p.x = 0;
-            if (p.y < 0) p.y = H;
-            if (p.y > H) p.y = 0;
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(201,161,74,${p.o})`;
-            ctx.fill();
-        });
+        if (isLoaded) {
+            const img = frames[currentFrame];
+            if (img && img.complete) {
+                // Draw with "cover" behavior
+                const imgRatio = img.width / img.height;
+                const canvasRatio = W / H;
+                let drawW, drawH, drawX, drawY;
+
+                if (canvasRatio > imgRatio) {
+                    drawW = W;
+                    drawH = W / imgRatio;
+                    drawX = 0;
+                    drawY = (H - drawH) / 2;
+                } else {
+                    drawW = H * imgRatio;
+                    drawH = H;
+                    drawX = (W - drawW) / 2;
+                    drawY = 0;
+                }
+                
+                ctx.drawImage(img, drawX, drawY, drawW, drawH);
+                
+                // Add a subtle dark overlay to keep text readable
+                ctx.fillStyle = 'rgba(10, 7, 3, 0.6)';
+                ctx.fillRect(0, 0, W, H);
+
+                if (currentFrame < totalFrames) {
+                    currentFrame++;
+                }
+            }
+        } else {
+            // Loading state: just a gradient
+            const g = ctx.createRadialGradient(W * .5, H * .44, 0, W * .5, H * .44, W * .72);
+            g.addColorStop(0, 'rgba(46,31,13,.88)');
+            g.addColorStop(1, 'rgba(10,7,3,1)');
+            ctx.fillStyle = g;
+            ctx.fillRect(0, 0, W, H);
+        }
         requestAnimationFrame(draw);
     }
+
     resize();
-    init();
+    preload();
     draw();
-    window.addEventListener('resize', () => {
-        resize();
-        init();
-    });
+    window.addEventListener('resize', resize);
     </script>
 </body>
 
