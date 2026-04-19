@@ -1,6 +1,10 @@
 <?php
 /**
  * _sidebar.php — reusable admin sidebar
+ *
+ * Include at the top of every admin page AFTER session_start().
+ * Set $activePage before including:
+ *   $activePage = 'dashboard' | 'orders' | 'products' | 'users' | 'manual' | 'checks'
  */
 $nav = [
     'dashboard' => ['icon' => 'dashboard',       'label' => 'Dashboard',    'href' => 'admin-dashboard.php'],
@@ -49,3 +53,21 @@ $userInitials = strtoupper(substr($_SESSION['user_name'] ?? 'AD', 0, 2));
         </div>
     </div>
 </aside>
+
+<!-- Toast Notifications Container -->
+<div id="toast-container"></div>
+
+<!-- Custom Confirmation Modal -->
+<div id="confirm-modal-overlay">
+    <div class="confirm-modal">
+        <div class="confirm-modal-icon">
+            <span class="material-symbols-outlined">help_center</span>
+        </div>
+        <h3 id="confirm-title">Confirm Action</h3>
+        <p id="confirm-message">Are you sure you want to proceed?</p>
+        <div class="confirm-modal-actions">
+            <button class="btn btn-secondary" id="confirm-cancel-btn">No, Cancel</button>
+            <button class="btn btn-primary" id="confirm-ok-btn">Yes, Confirm</button>
+        </div>
+    </div>
+</div>

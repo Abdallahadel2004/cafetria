@@ -10,6 +10,58 @@
 
 'use strict';
 
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    
+    const icon = type === 'success' ? 'check_circle' : (type === 'error' ? 'error' : 'info');
+    
+    toast.innerHTML = `
+        <span class="material-symbols-outlined toast-icon">${icon}</span>
+        <span class="toast-message">${message}</span>
+    `;
+
+    container.appendChild(toast);
+
+    // Remove after 4 seconds
+    setTimeout(() => {
+        toast.classList.add('toast-out');
+        toast.addEventListener('animationend', () => toast.remove());
+    }, 4000);
+}
+
+function showConfirm(title, message) {
+    return new Promise((resolve) => {
+        const overlay = document.getElementById('confirm-modal-overlay');
+        const titleEl = document.getElementById('confirm-title');
+        const msgEl   = document.getElementById('confirm-message');
+        const okBtn   = document.getElementById('confirm-ok-btn');
+        const canBtn  = document.getElementById('confirm-cancel-btn');
+
+        if (!overlay || !okBtn || !canBtn) return resolve(false);
+
+        titleEl.textContent = title;
+        msgEl.textContent   = message;
+        overlay.classList.add('open');
+
+        const cleanup = (result) => {
+            overlay.classList.remove('open');
+            okBtn.removeEventListener('click', onOk);
+            canBtn.removeEventListener('click', onCancel);
+            resolve(result);
+        };
+
+        const onOk = () => cleanup(true);
+        const onCancel = () => cleanup(false);
+
+        okBtn.addEventListener('click', onOk);
+        canBtn.addEventListener('click', onCancel);
+    });
+}
+
 
 // ══════════════════════════════════════════════════════════
 //  ORDERS — AJAX ACTIONS
@@ -49,8 +101,9 @@ async function _updateOrder(action, id, btn, newStatus) {
             const actionsCell = row.querySelector('td:last-child, .order-card-body > div:last-child');
             if (actionsCell) actionsCell.innerHTML = '';
         }
+        showToast(`Order ${action}ed successfully`, 'success');
     } catch (err) {
-        alert('Error: ' + err.message);
+        showToast('Error: ' + err.message, 'error');
         if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
     }
 }
@@ -90,7 +143,7 @@ function setOrderView(view) {
 // ══════════════════════════════════════════════════════════
 
 function openAddProduct() {
-    ['new-name','new-price','new-desc','new-emoji'].forEach(id => {
+    ['new-name','new-price','new-desc','new-image'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.value = '';
     });
@@ -100,36 +153,37 @@ function openAddProduct() {
 async function submitAddProduct() {
     const name     = document.getElementById('new-name')?.value.trim()   ?? '';
     const price    = parseInt(document.getElementById('new-price')?.value ?? '0');
-    const category = document.getElementById('new-category')?.value       ?? '';
+    const category_id = parseInt(document.getElementById('new-category-id')?.value ?? '0');
     const status   = document.getElementById('new-status')?.value         ?? 'Available';
-    const emoji    = document.getElementById('new-emoji')?.value           ?? '';
+    const image    = document.getElementById('new-image')?.value           ?? '';
     const desc     = document.getElementById('new-desc')?.value.trim()    ?? '';
 
-    if (!name || !price) { alert('Name and price are required.'); return; }
+    if (!name || !price) { showToast('Name and price are required.', 'error'); return; }
 
     try {
         const res  = await fetch('api/products.php', {
             method:  'POST',
             headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ action:'add', name, category, price, status, emoji, desc }),
+            body:    JSON.stringify({ action:'add', name, category_id, price, status, image, desc }),
         });
         const data = await res.json();
         if (!data.success) throw new Error(data.error);
 
         closeModal('add-product-modal');
-        location.reload(); // reload to show new row from DB
+        showToast('Product added successfully', 'success');
+        setTimeout(() => location.reload(), 1000);
     } catch (err) {
-        alert('Error adding product: ' + err.message);
+        showToast('Error adding product: ' + err.message, 'error');
     }
 }
 
 function openEditProduct(p) {
-    document.getElementById('edit-id').value       = p.id;
-    document.getElementById('edit-name').value     = p.name;
-    document.getElementById('edit-category').value = p.category;
-    document.getElementById('edit-price').value    = p.price;
+    document.getElementById('edit-id').value          = p.id;
+    document.getElementById('edit-name').value        = p.name;
+    document.getElementById('edit-category-id').value = p.category_id;
+    document.getElementById('edit-price').value       = p.price;
     document.getElementById('edit-status').value   = p.status;
-    document.getElementById('edit-emoji').value    = p.emoji ?? '';
+    document.getElementById('edit-image').value       = p.image ?? '';
     document.getElementById('edit-desc').value     = p.desc  ?? '';
     openModal('edit-product-modal');
 }
@@ -137,32 +191,34 @@ function openEditProduct(p) {
 async function submitEditProduct() {
     const id       = parseInt(document.getElementById('edit-id')?.value    ?? '0');
     const name     = document.getElementById('edit-name')?.value.trim()    ?? '';
-    const category = document.getElementById('edit-category')?.value       ?? '';
+    const category_id = parseInt(document.getElementById('edit-category-id')?.value ?? '0');
     const price    = parseInt(document.getElementById('edit-price')?.value ?? '0');
     const status   = document.getElementById('edit-status')?.value         ?? 'Available';
-    const emoji    = document.getElementById('edit-emoji')?.value           ?? '';
+    const image    = document.getElementById('edit-image')?.value           ?? '';
     const desc     = document.getElementById('edit-desc')?.value.trim()    ?? '';
 
-    if (!id || !name || !price) { alert('Invalid data.'); return; }
+    if (!id || !name || !price) { showToast('Invalid data.', 'error'); return; }
 
     try {
         const res  = await fetch('api/products.php', {
             method:  'POST',
             headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ action:'edit', id, name, category, price, status, emoji, desc }),
+            body:    JSON.stringify({ action:'edit', id, name, category_id, price, status, image, desc }),
         });
         const data = await res.json();
         if (!data.success) throw new Error(data.error);
 
         closeModal('edit-product-modal');
-        location.reload();
+        showToast('Product updated successfully', 'success');
+        setTimeout(() => location.reload(), 1000);
     } catch (err) {
-        alert('Error updating product: ' + err.message);
+        showToast('Error updating product: ' + err.message, 'error');
     }
 }
 
 async function deleteProduct(id) {
-    if (!confirm('Delete this product? This cannot be undone.')) return;
+    const confirmed = await showConfirm('Delete Product', 'Are you sure you want to delete this product? This cannot be undone.');
+    if (!confirmed) return;
 
     try {
         const res  = await fetch('api/products.php', {
@@ -183,8 +239,9 @@ async function deleteProduct(id) {
             const current = parseInt(badge.textContent) || 0;
             badge.textContent = `${Math.max(0, current - 1)} products`;
         }
+        showToast('Product deleted successfully', 'success');
     } catch (err) {
-        alert('Error deleting product: ' + err.message);
+        showToast('Error deleting product: ' + err.message, 'error');
     }
 }
 
@@ -213,11 +270,13 @@ async function toggleProduct(id) {
             cardBadge.className  = `badge ${isAvail ? 'badge-available' : 'badge-unavailable'}`;
             cardBadge.textContent = newStatus;
         }
-        // Flip the toggle button icon
-        const toggleBtn = document.querySelector(`#product-row-${id} button[onclick*="toggleProduct"] .material-symbols-outlined`);
-        if (toggleBtn) toggleBtn.textContent = isAvail ? 'visibility_off' : 'visibility';
+        // Flip the toggle button icon in all views (table row & grid card)
+        document.querySelectorAll(`[onclick*="toggleProduct(${id})"] .material-symbols-outlined`).forEach(icon => {
+            icon.textContent = isAvail ? 'visibility_off' : 'visibility';
+        });
+        showToast(`Product is now ${newStatus}`, 'success');
     } catch (err) {
-        alert('Error toggling product: ' + err.message);
+        showToast('Error toggling product: ' + err.message, 'error');
     }
 }
 

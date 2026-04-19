@@ -34,10 +34,11 @@ $userName = htmlspecialchars($_SESSION['user_name'] ?? 'User');
 
 // ── Available products (the cards in the right-hand grid) ────────────────
 $products = $pdo->query("
-    SELECT id, name, category, price, emoji, description
-    FROM   products
-    WHERE  status = 'Available'
-    ORDER  BY category, name
+    SELECT p.id, p.name, c.name AS category, p.price, p.description, p.image
+    FROM   products p
+    LEFT JOIN categories c ON p.category_id = c.id
+    WHERE  p.status = 'available'
+    ORDER  BY category, p.name
 ")->fetchAll();
 
 // ── Distinct rooms for the delivery dropdown ─────────────────────────────
@@ -58,10 +59,14 @@ if ($myRoom !== '' && !in_array($myRoom, $rooms, true)) {
 
 // ── This user's most recent order for the "Quick Reorder" panel ──────────
 $lastOrderStmt = $pdo->prepare("
-    SELECT id, items_summary, total, created_at
-    FROM   orders
-    WHERE  user_id = :uid
-    ORDER  BY created_at DESC
+    SELECT o.id, o.total, o.created_at,
+           (SELECT GROUP_CONCAT(CONCAT(oi.quantity, 'x ', p.name) SEPARATOR ', ')
+            FROM order_items oi
+            JOIN products p ON oi.product_id = p.id
+            WHERE oi.order_id = o.id) AS items_summary
+    FROM   orders o
+    WHERE  o.user_id = :uid
+    ORDER  BY o.created_at DESC
     LIMIT  1
 ");
 $lastOrderStmt->execute([':uid' => $userId]);
@@ -96,7 +101,7 @@ $lastOrder = $lastOrderStmt->fetch();
                 <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=<?= urlencode($userName) ?>" alt="User" class="avatar">
                 <div class="user-info">
                     <p class="user-name"><?= $userName ?></p>
-                    <p class="user-role">Customer</p>
+                    <p class="user-role"><?= ($_SESSION['role'] ?? 'user') === 'admin' ? 'ADMIN' : 'CUSTOMER' ?></p>
                 </div>
             </div>
         </div>
@@ -213,7 +218,11 @@ $lastOrder = $lastOrderStmt->fetch();
                                  onclick="addToCart(this)">
                                 <div class="img-wrapper">
                                     <span class="product-img-placeholder" style="font-size:3rem;display:flex;align-items:center;justify-content:center;height:120px;">
-                                        <?= htmlspecialchars($p['emoji'] ?: '🍽️') ?>
+                                        <?php if ($p['image']): ?>
+                                            <img src="<?= htmlspecialchars($p['image']) ?>" alt="<?= htmlspecialchars($p['name']) ?>" style="width:100%;height:100%;object-fit:cover;">
+                                        <?php else: ?>
+                                            <span class="material-symbols-outlined" style="font-size:3rem;color:var(--primary-light);">local_cafe</span>
+                                        <?php endif; ?>
                                     </span>
                                     <span class="price-badge"><?= (int)$p['price'] ?> LE</span>
                                 </div>
@@ -233,6 +242,24 @@ $lastOrder = $lastOrderStmt->fetch();
             </section>
         </div>
     </main>
+
+    <!-- Toast Notifications Container -->
+    <div id="toast-container"></div>
+
+    <!-- Custom Confirmation Modal -->
+    <div id="confirm-modal-overlay">
+        <div class="confirm-modal">
+            <div class="confirm-modal-icon">
+                <span class="material-symbols-outlined">help_center</span>
+            </div>
+            <h3 id="confirm-title">Confirm Action</h3>
+            <p id="confirm-message">Are you sure you want to proceed?</p>
+            <div class="confirm-modal-actions">
+                <button class="btn btn-secondary" id="confirm-cancel-btn">No, Cancel</button>
+                <button class="btn btn-primary" id="confirm-ok-btn">Yes, Confirm</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Hand the user.js script some PHP-derived bootstrap data -->
     <script>

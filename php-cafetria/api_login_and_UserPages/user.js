@@ -101,6 +101,58 @@ function filterCategory(btn, category) {
 //  AJAX — place / cancel / reorder
 // ─────────────────────────────────────────────
 
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    
+    const icon = type === 'success' ? 'check_circle' : (type === 'error' ? 'error' : 'info');
+    
+    toast.innerHTML = `
+        <span class="material-symbols-outlined toast-icon">${icon}</span>
+        <span class="toast-message">${message}</span>
+    `;
+
+    container.appendChild(toast);
+
+    // Remove after 4 seconds
+    setTimeout(() => {
+        toast.classList.add('toast-out');
+        toast.addEventListener('animationend', () => toast.remove());
+    }, 4000);
+}
+
+function showConfirm(title, message) {
+    return new Promise((resolve) => {
+        const overlay = document.getElementById('confirm-modal-overlay');
+        const titleEl = document.getElementById('confirm-title');
+        const msgEl   = document.getElementById('confirm-message');
+        const okBtn   = document.getElementById('confirm-ok-btn');
+        const canBtn  = document.getElementById('confirm-cancel-btn');
+
+        if (!overlay || !okBtn || !canBtn) return resolve(false);
+
+        titleEl.textContent = title;
+        msgEl.textContent   = message;
+        overlay.classList.add('open');
+
+        const cleanup = (result) => {
+            overlay.classList.remove('open');
+            okBtn.removeEventListener('click', onOk);
+            canBtn.removeEventListener('click', onCancel);
+            resolve(result);
+        };
+
+        const onOk = () => cleanup(true);
+        const onCancel = () => cleanup(false);
+
+        okBtn.addEventListener('click', onOk);
+        canBtn.addEventListener('click', onCancel);
+    });
+}
+
 async function postOrder(payload) {
     const res = await fetch('api/order.php', {
         method:  'POST',
@@ -132,16 +184,18 @@ async function submitOrder() {
         const data  = await postOrder({ action: 'place', items, room, notes });
 
         if (!data.success) {
-            alert(data.error || 'Failed to place order');
+            showToast(data.error || 'Failed to place order', 'error');
             return;
         }
 
-        alert(`Order #${data.id} placed! Total: EGP ${data.total}`);
+        showToast(`Order #${data.id} placed! Total: EGP ${data.total}`, 'success');
         cart.clear();
         renderCart();
-        window.location.href = 'user-orders.php';
+        setTimeout(() => {
+            window.location.href = 'user-orders.php';
+        }, 1500);
     } catch (err) {
-        alert('Network error placing order');
+        showToast('Network error placing order', 'error');
         console.error(err);
     } finally {
         btn.disabled = false;
@@ -150,16 +204,21 @@ async function submitOrder() {
 }
 
 async function cancelMyOrder(id, btn) {
-    if (!confirm('Cancel this order?')) return;
+    const confirmed = await showConfirm('Cancel Order', 'Are you sure you want to cancel this order?');
+    if (!confirmed) return;
+    
     if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
 
     try {
         const data = await postOrder({ action: 'cancel', id });
         if (!data.success) {
-            alert(data.error || 'Could not cancel');
+            showToast(data.error || 'Could not cancel', 'error');
             if (btn) { btn.disabled = false; btn.style.opacity = ''; }
             return;
         }
+        
+        showToast('Order cancelled successfully', 'success');
+
         // Repaint just this row's status badge + remove the cancel button
         const row = document.getElementById(`row-${id}`);
         if (row) {
@@ -173,7 +232,7 @@ async function cancelMyOrder(id, btn) {
                 '<span style="color: var(--on-surface-variant); font-size:0.8125rem;">&mdash;</span>';
         }
     } catch (err) {
-        alert('Network error');
+        showToast('Network error', 'error');
         console.error(err);
         if (btn) { btn.disabled = false; btn.style.opacity = ''; }
     }
@@ -184,11 +243,11 @@ async function reorderLast(id) {
     try {
         const data = await postOrder({ action: 'reorder', id });
         if (!data.success) {
-            alert(data.error || 'Could not reorder');
+            showToast(data.error || 'Could not reorder', 'error');
             return;
         }
         if (!data.items || data.items.length === 0) {
-            alert('None of those items are available right now.');
+            showToast('None of those items are available right now.', 'error');
             return;
         }
         cart.clear();
@@ -196,9 +255,10 @@ async function reorderLast(id) {
             cart.set(it.id, { id: it.id, name: it.name, price: it.price, qty: it.qty });
         }
         renderCart();
+        showToast('Items added to cart', 'success');
         document.querySelector('.order-cart')?.scrollIntoView({ behavior: 'smooth' });
     } catch (err) {
-        alert('Network error');
+        showToast('Network error', 'error');
         console.error(err);
     }
 }

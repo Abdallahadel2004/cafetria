@@ -45,10 +45,12 @@ $dateTo   = clean_date($_GET['date_to']   ?? null);
 
 // ── Build query ──────────────────────────────────────────────────────────
 $sql = "
-    SELECT o.id, o.created_at, o.items_summary, o.total, o.status,
-           u.room AS room, o.notes
+    SELECT o.id, o.created_at, o.total, o.status, o.room, o.notes,
+           (SELECT GROUP_CONCAT(CONCAT(oi.quantity, 'x ', p.name) SEPARATOR ', ')
+            FROM order_items oi
+            JOIN products p ON oi.product_id = p.id
+            WHERE oi.order_id = o.id) AS items_summary
     FROM   orders o
-    JOIN   users  u ON u.id = o.user_id
     WHERE  o.user_id = :uid
 ";
 $params = [':uid' => $userId];
@@ -67,28 +69,31 @@ $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $orders = $stmt->fetchAll();
 
-/**
- * Parse "2x Coffee, 1x Tea" into [['qty' => 2, 'name' => 'Coffee'], ...]
- * Falls back to a single row containing the raw string if parsing fails.
- */
-function parse_items(string $summary): array {
-    $items = [];
-    foreach (preg_split('/\s*,\s*/', trim($summary)) as $part) {
-        if ($part === '') continue;
-        if (preg_match('/^(\d+)\s*x\s*(.+)$/i', $part, $m)) {
-            $items[] = ['qty' => (int)$m[1], 'name' => trim($m[2])];
-        } else {
-            $items[] = ['qty' => 1, 'name' => $part];
-        }
+// ── Fetch detailed items for the expandable rows ─────────────────────────
+$orderIds = array_column($orders, 'id');
+$itemsMap = [];
+if ($orderIds) {
+    $place = implode(',', array_fill(0, count($orderIds), '?'));
+    $itemStmt = $pdo->prepare("
+        SELECT oi.order_id, oi.quantity AS qty, p.name
+        FROM   order_items oi
+        JOIN   products p ON oi.product_id = p.id
+        WHERE  oi.order_id IN ($place)
+    ");
+    $itemStmt->execute($orderIds);
+    foreach ($itemStmt->fetchAll() as $it) {
+        $itemsMap[$it['order_id']][] = $it;
     }
-    return $items ?: [['qty' => 1, 'name' => $summary]];
 }
 
+
 function status_badge_class(string $status): string {
+    $status = strtolower($status);
     $map = [
-        'Processing' => 'badge-processing',
-        'Delivered'  => 'badge-delivered',
-        'Cancelled'  => 'badge-unavailable',
+        'processing'       => 'badge-processing',
+        'out_for_delivery' => 'badge-processing',
+        'done'             => 'badge-delivered',
+        'cancelled'        => 'badge-unavailable',
     ];
     return $map[$status] ?? 'badge-processing';
 }
@@ -122,7 +127,7 @@ function status_badge_class(string $status): string {
                 <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=<?= urlencode($userName) ?>" alt="User" class="avatar">
                 <div class="user-info">
                     <p class="user-name"><?= $userName ?></p>
-                    <p class="user-role">Customer</p>
+                    <p class="user-role"><?= ($_SESSION['role'] ?? 'user') === 'admin' ? 'ADMIN' : 'CUSTOMER' ?></p>
                 </div>
             </div>
         </div>
@@ -182,7 +187,7 @@ function status_badge_class(string $status): string {
                     <?php else: ?>
                         <?php foreach ($orders as $o):
                             $rowId  = 'order-' . (int)$o['id'];
-                            $items  = parse_items((string)$o['items_summary']);
+                            $items  = $itemsMap[$o['id']] ?? [];
                             $notes  = trim((string)$o['notes']);
                             $status = (string)$o['status'];
                         ?>
@@ -198,7 +203,7 @@ function status_badge_class(string $status): string {
                                 </span>
                             </td>
                             <td>
-                                <?php if ($status === 'Processing'): ?>
+                                <?php if (strtolower($status) === 'processing'): ?>
                                     <button class="btn btn-danger btn-sm"
                                             onclick="cancelMyOrder(<?= (int)$o['id'] ?>, this)">
                                         Cancel
@@ -245,6 +250,24 @@ function status_badge_class(string $status): string {
             </table>
         </div>
     </main>
+    <!-- Toast Notifications Container -->
+    <div id="toast-container"></div>
+
+    <!-- Custom Confirmation Modal -->
+    <div id="confirm-modal-overlay">
+        <div class="confirm-modal">
+            <div class="confirm-modal-icon">
+                <span class="material-symbols-outlined">help_center</span>
+            </div>
+            <h3 id="confirm-title">Confirm Action</h3>
+            <p id="confirm-message">Are you sure you want to proceed?</p>
+            <div class="confirm-modal-actions">
+                <button class="btn btn-secondary" id="confirm-cancel-btn">No, Cancel</button>
+                <button class="btn btn-primary" id="confirm-ok-btn">Yes, Confirm</button>
+            </div>
+        </div>
+    </div>
+
     <script src="../script.js"></script>
     <script src="user.js"></script>
 </body>

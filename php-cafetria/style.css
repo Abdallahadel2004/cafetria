@@ -1145,3 +1145,74 @@ select.form-control {
         grid-template-columns: 1fr;
     }
 }
+
+/* ── Custom Confirmation Modal ─────────────────── */
+#confirm-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(14, 10, 6, 0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+#confirm-modal-overlay.open {
+    display: flex;
+    opacity: 1;
+}
+
+.confirm-modal {
+    background: var(--surface);
+    width: min(400px, 90vw);
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl);
+    text-align: center;
+    transform: scale(0.9);
+    transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+
+#confirm-modal-overlay.open .confirm-modal {
+    transform: scale(1);
+}
+
+.confirm-modal-icon {
+    width: 64px;
+    height: 64px;
+    background: var(--surface-container-highest);
+    color: var(--primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto var(--spacing-md);
+}
+
+.confirm-modal-icon span {
+    font-size: 32px;
+}
+
+.confirm-modal h3 {
+    font-size: 1.25rem;
+    margin-bottom: var(--spacing-xs);
+}
+
+.confirm-modal p {
+    color: var(--on-surface-variant);
+    font-size: 0.9375rem;
+    margin-bottom: var(--spacing-lg);
+}
+
+.confirm-modal-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.confirm-modal-actions button {
+    flex: 1;
+}

@@ -95,7 +95,7 @@ if ($action === 'place') {
     $summary    = [];
     $linePrices = [];     // pid => unit_price (for stats / order_items if you add it)
     foreach ($products as $p) {
-        if ($p['status'] !== 'Available') {
+        if (strtolower($p['status']) !== 'available') {
             http_response_code(400);
             echo json_encode(['success' => false, 'error' => "'{$p['name']}' is no longer available"]);
             exit;
@@ -110,37 +110,43 @@ if ($action === 'place') {
     }
     $itemsSummary = implode(', ', $summary);
 
-    // ── Insert (transaction so we also bump products.total_orders atomically) ──
+    // ── Insert (transaction to insert order and items) ──
     try {
         $pdo->beginTransaction();
 
         $ins = $pdo->prepare("
-            INSERT INTO orders (user_id, items_summary, total, status, notes, created_at)
-            VALUES             (:uid,    :summary,      :total, 'Processing', :notes, NOW())
+            INSERT INTO orders (user_id, notes, room, total, status, items_summary)
+            VALUES             (:uid,    :notes, :room, :total, 'processing', :summary)
         ");
         $ins->execute([
             ':uid'     => $userId,
-            ':summary' => $itemsSummary,
-            ':total'   => $total,
             ':notes'   => $notes,
+            ':room'    => $room,
+            ':total'   => $total,
+            ':summary' => $itemsSummary,
         ]);
         $orderId = (int)$pdo->lastInsertId();
 
-        // Bump the per-product order counter.
-        $bump = $pdo->prepare("
-            UPDATE products
-            SET    total_orders = total_orders + :qty
-            WHERE  id = :id
+        // Insert individual items into order_items
+        $insItem = $pdo->prepare("
+            INSERT INTO order_items (order_id, product_id, quantity, unit_price)
+            VALUES                 (:oid,     :pid,        :qty,     :price)
         ");
-        foreach ($cart as $pid => $qty) {
-            $bump->execute([':qty' => $qty, ':id' => $pid]);
+        foreach ($products as $p) {
+            $pid = (int)$p['id'];
+            $insItem->execute([
+                ':oid'   => $orderId,
+                ':pid'   => $pid,
+                ':qty'   => $cart[$pid],
+                ':price' => $p['price']
+            ]);
         }
 
         $pdo->commit();
     } catch (Throwable $e) {
         $pdo->rollBack();
         http_response_code(500);
-        echo json_encode(['success' => false, 'error' => 'Could not place order']);
+        echo json_encode(['success' => false, 'error' => 'Could not place order: ' . $e->getMessage()]);
         exit;
     }
 
@@ -166,10 +172,10 @@ if ($action === 'cancel') {
 
     $stmt = $pdo->prepare("
         UPDATE orders
-        SET    status = 'Cancelled', updated_at = NOW()
+        SET    status = 'cancelled'
         WHERE  id = :id
           AND  user_id = :uid
-          AND  status  = 'Processing'
+          AND  status  = 'processing'
     ");
     $stmt->execute([':id' => $id, ':uid' => $userId]);
 
@@ -194,51 +200,21 @@ if ($action === 'reorder') {
         exit;
     }
 
-    // Verify the order belongs to this user.
+    // Verify the order belongs to this user and get items
     $stmt = $pdo->prepare("
-        SELECT items_summary
-        FROM   orders
-        WHERE  id = :id AND user_id = :uid
-        LIMIT  1
+        SELECT oi.product_id AS id, p.name, oi.unit_price AS price, oi.quantity AS qty
+        FROM   order_items oi
+        JOIN   products p ON oi.product_id = p.id
+        JOIN   orders o ON oi.order_id = o.id
+        WHERE  o.id = :id AND o.user_id = :uid
     ");
     $stmt->execute([':id' => $id, ':uid' => $userId]);
-    $row = $stmt->fetch();
-    if (!$row) {
+    $cartItems = $stmt->fetchAll();
+
+    if (!$cartItems) {
         http_response_code(404);
-        echo json_encode(['success' => false, 'error' => 'Order not found']);
+        echo json_encode(['success' => false, 'error' => 'Order not found or empty']);
         exit;
-    }
-
-    // Parse "2x Coffee, 1x Tea" -> [name => qty]
-    $wanted = [];
-    foreach (preg_split('/\s*,\s*/', trim((string)$row['items_summary'])) as $part) {
-        if ($part === '') continue;
-        if (preg_match('/^(\d+)\s*x\s*(.+)$/i', $part, $m)) {
-            $wanted[trim($m[2])] = (int)$m[1];
-        }
-    }
-    if (!$wanted) {
-        echo json_encode(['success' => true, 'items' => []]);
-        exit;
-    }
-
-    // Look the names back up against the live (still-Available) catalog.
-    $place = implode(',', array_fill(0, count($wanted), '?'));
-    $stmt  = $pdo->prepare("
-        SELECT id, name, price
-        FROM   products
-        WHERE  status = 'Available' AND name IN ($place)
-    ");
-    $stmt->execute(array_keys($wanted));
-
-    $cartItems = [];
-    foreach ($stmt->fetchAll() as $p) {
-        $cartItems[] = [
-            'id'    => (int)$p['id'],
-            'name'  => $p['name'],
-            'price' => (int)$p['price'],
-            'qty'   => $wanted[$p['name']] ?? 1,
-        ];
     }
 
     echo json_encode(['success' => true, 'items' => $cartItems]);

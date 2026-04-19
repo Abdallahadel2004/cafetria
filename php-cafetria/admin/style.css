@@ -442,3 +442,120 @@ tbody td { padding: 0.875rem 1.25rem; color: var(--on-surface); vertical-align: 
 .view-btn    { padding: 0.4rem 0.75rem; border: none; background: none; cursor: pointer; color: var(--on-surface-variant); transition: all 0.2s; }
 .view-btn.active { background: var(--primary); color: #fff; }
 .view-btn .material-symbols-outlined { font-size: 18px; }
+
+/* ── TOAST NOTIFICATIONS ────────────────────────── */
+#toast-container {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    pointer-events: none;
+}
+
+.toast {
+    background: var(--on-surface);
+    color: var(--surface);
+    padding: 1rem 1.5rem;
+    border-radius: 1rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    min-width: 300px;
+    pointer-events: auto;
+    animation: toast-in 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+    border-left: 4px solid var(--primary);
+}
+
+.toast.error   { border-left-color: var(--error); }
+.toast.success { border-left-color: var(--secondary); }
+
+@keyframes toast-in {
+    from { transform: translate(-50%, 100%); opacity: 0; }
+    to   { transform: translate(-50%, 0); opacity: 1; }
+}
+
+.toast-out {
+    animation: toast-out 0.3s ease forwards !important;
+}
+
+@keyframes toast-out {
+    from { transform: translate(-50%, 0); opacity: 1; }
+    to   { transform: translate(-50%, 100%); opacity: 0; }
+}
+
+/* ── CUSTOM CONFIRMATION MODAL ─────────────────── */
+#confirm-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(14, 10, 6, 0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+#confirm-modal-overlay.open {
+    display: flex;
+    opacity: 1;
+}
+
+.confirm-modal {
+    background: var(--surface-lowest);
+    width: min(400px, 90vw);
+    padding: 2rem;
+    border-radius: 1.5rem;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    text-align: center;
+    transform: scale(0.9);
+    transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+
+#confirm-modal-overlay.open .confirm-modal {
+    transform: scale(1);
+}
+
+.confirm-modal-icon {
+    width: 60px;
+    height: 60px;
+    background: var(--surface-low);
+    color: var(--primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.25rem;
+}
+
+.confirm-modal-icon span { font-size: 30px; }
+
+.confirm-modal h3 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+}
+
+.confirm-modal p {
+    color: var(--on-surface-variant);
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+}
+
+.confirm-modal-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.confirm-modal-actions button {
+    flex: 1;
+}
