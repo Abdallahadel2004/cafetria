@@ -16,9 +16,14 @@ function showToast(message, type = 'success') {
 
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    
-    const icon = type === 'success' ? 'check_circle' : (type === 'error' ? 'error' : 'info');
-    
+
+    const icon =
+        type === 'success'
+            ? 'check_circle'
+            : type === 'error'
+              ? 'error'
+              : 'info';
+
     toast.innerHTML = `
         <span class="material-symbols-outlined toast-icon">${icon}</span>
         <span class="toast-message">${message}</span>
@@ -37,14 +42,14 @@ function showConfirm(title, message) {
     return new Promise((resolve) => {
         const overlay = document.getElementById('confirm-modal-overlay');
         const titleEl = document.getElementById('confirm-title');
-        const msgEl   = document.getElementById('confirm-message');
-        const okBtn   = document.getElementById('confirm-ok-btn');
-        const canBtn  = document.getElementById('confirm-cancel-btn');
+        const msgEl = document.getElementById('confirm-message');
+        const okBtn = document.getElementById('confirm-ok-btn');
+        const canBtn = document.getElementById('confirm-cancel-btn');
 
         if (!overlay || !okBtn || !canBtn) return resolve(false);
 
         titleEl.textContent = title;
-        msgEl.textContent   = message;
+        msgEl.textContent = message;
         overlay.classList.add('open');
 
         const cleanup = (result) => {
@@ -62,7 +67,6 @@ function showConfirm(title, message) {
     });
 }
 
-
 // ══════════════════════════════════════════════════════════
 //  ORDERS — AJAX ACTIONS
 // ══════════════════════════════════════════════════════════
@@ -76,13 +80,16 @@ async function cancelOrder(id, btn) {
 }
 
 async function _updateOrder(action, id, btn, newStatus) {
-    if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
+    if (btn) {
+        btn.disabled = true;
+        btn.style.opacity = '0.6';
+    }
 
     try {
-        const res  = await fetch('api/orders.php', {
-            method:  'POST',
+        const res = await fetch('api/orders.php', {
+            method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ action, id }),
+            body: JSON.stringify({ action, id }),
         });
         const data = await res.json();
 
@@ -98,44 +105,53 @@ async function _updateOrder(action, id, btn, newStatus) {
                 badge.textContent = newStatus;
             }
             // Remove action buttons since order is no longer Processing
-            const actionsCell = row.querySelector('td:last-child, .order-card-body > div:last-child');
+            const actionsCell = row.querySelector(
+                'td:last-child, .order-card-body > div:last-child'
+            );
             if (actionsCell) actionsCell.innerHTML = '';
         }
         showToast(`Order ${action}ed successfully`, 'success');
     } catch (err) {
         showToast('Error: ' + err.message, 'error');
-        if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+        if (btn) {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+        }
     }
 }
-
 
 // ── Client-side search / filter ───────────────────────────────────────────
 
 function filterOrdersTable() {
-    const q = document.getElementById('orders-search')?.value.toLowerCase() ?? '';
+    const q =
+        document.getElementById('orders-search')?.value.toLowerCase() ?? '';
 
-    document.querySelectorAll('#orders-table-body tr[data-search]').forEach(row => {
-        row.style.display = row.dataset.search.includes(q) ? '' : 'none';
-    });
-    document.querySelectorAll('#orders-card-view .order-card[data-search]').forEach(card => {
-        card.style.display = card.dataset.search.includes(q) ? '' : 'none';
-    });
+    document
+        .querySelectorAll('#orders-table-body tr[data-search]')
+        .forEach((row) => {
+            row.style.display = row.dataset.search.includes(q) ? '' : 'none';
+        });
+    document
+        .querySelectorAll('#orders-card-view .order-card[data-search]')
+        .forEach((card) => {
+            card.style.display = card.dataset.search.includes(q) ? '' : 'none';
+        });
 }
 
 // ── View toggle (table ↔ card) ────────────────────────────────────────────
 
 function setOrderView(view) {
     const tableView = document.getElementById('orders-table-view');
-    const cardView  = document.getElementById('orders-card-view');
-    const tableBtn  = document.getElementById('view-table-btn');
-    const cardBtn   = document.getElementById('view-card-btn');
+    const cardView = document.getElementById('orders-card-view');
+    const tableBtn = document.getElementById('view-table-btn');
+    const cardBtn = document.getElementById('view-card-btn');
 
     if (!tableView || !cardView) return;
 
     tableView.style.display = view === 'table' ? '' : 'none';
-    cardView.style.display  = view === 'card'  ? '' : 'none';
+    cardView.style.display = view === 'card' ? '' : 'none';
     tableBtn?.classList.toggle('active', view === 'table');
-    cardBtn?.classList.toggle('active',  view === 'card');
+    cardBtn?.classList.toggle('active', view === 'card');
 }
 
 // ══════════════════════════════════════════════════════════
@@ -143,7 +159,7 @@ function setOrderView(view) {
 // ══════════════════════════════════════════════════════════
 
 function openAddProduct() {
-    ['new-name','new-price','new-desc','new-image'].forEach(id => {
+    ['new-name', 'new-price', 'new-desc', 'new-image'].forEach((id) => {
         const el = document.getElementById(id);
         if (el) el.value = '';
     });
@@ -151,20 +167,33 @@ function openAddProduct() {
 }
 
 async function submitAddProduct() {
-    const name     = document.getElementById('new-name')?.value.trim()   ?? '';
-    const price    = parseInt(document.getElementById('new-price')?.value ?? '0');
-    const category_id = parseInt(document.getElementById('new-category-id')?.value ?? '0');
-    const status   = document.getElementById('new-status')?.value         ?? 'Available';
-    const image    = document.getElementById('new-image')?.value           ?? '';
-    const desc     = document.getElementById('new-desc')?.value.trim()    ?? '';
+    const name = document.getElementById('new-name')?.value.trim() ?? '';
+    const price = parseInt(document.getElementById('new-price')?.value ?? '0');
+    const category_id = parseInt(
+        document.getElementById('new-category-id')?.value ?? '0'
+    );
+    const status = document.getElementById('new-status')?.value ?? 'Available';
+    const image = document.getElementById('new-image')?.value ?? '';
+    const description = document.getElementById('new-desc')?.value.trim() ?? '';
 
-    if (!name || !price) { showToast('Name and price are required.', 'error'); return; }
+    if (!name || !price) {
+        showToast('Name and price are required.', 'error');
+        return;
+    }
 
     try {
-        const res  = await fetch('api/products.php', {
-            method:  'POST',
+        const res = await fetch('api/products.php', {
+            method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ action:'add', name, category_id, price, status, image, desc }),
+            body: JSON.stringify({
+                action: 'add',
+                name,
+                category_id,
+                price,
+                status,
+                image,
+                description,
+            }),
         });
         const data = await res.json();
         if (!data.success) throw new Error(data.error);
@@ -178,32 +207,47 @@ async function submitAddProduct() {
 }
 
 function openEditProduct(p) {
-    document.getElementById('edit-id').value          = p.id;
-    document.getElementById('edit-name').value        = p.name;
+    document.getElementById('edit-id').value = p.id;
+    document.getElementById('edit-name').value = p.name;
     document.getElementById('edit-category-id').value = p.category_id;
-    document.getElementById('edit-price').value       = p.price;
-    document.getElementById('edit-status').value   = p.status;
-    document.getElementById('edit-image').value       = p.image ?? '';
-    document.getElementById('edit-desc').value     = p.desc  ?? '';
+    document.getElementById('edit-price').value = p.price;
+    document.getElementById('edit-status').value = p.status;
+    document.getElementById('edit-image').value = p.image ?? '';
+    document.getElementById('edit-desc').value = p.description ?? '';
     openModal('edit-product-modal');
 }
 
 async function submitEditProduct() {
-    const id       = parseInt(document.getElementById('edit-id')?.value    ?? '0');
-    const name     = document.getElementById('edit-name')?.value.trim()    ?? '';
-    const category_id = parseInt(document.getElementById('edit-category-id')?.value ?? '0');
-    const price    = parseInt(document.getElementById('edit-price')?.value ?? '0');
-    const status   = document.getElementById('edit-status')?.value         ?? 'Available';
-    const image    = document.getElementById('edit-image')?.value           ?? '';
-    const desc     = document.getElementById('edit-desc')?.value.trim()    ?? '';
+    const id = parseInt(document.getElementById('edit-id')?.value ?? '0');
+    const name = document.getElementById('edit-name')?.value.trim() ?? '';
+    const category_id = parseInt(
+        document.getElementById('edit-category-id')?.value ?? '0'
+    );
+    const price = parseInt(document.getElementById('edit-price')?.value ?? '0');
+    const status = document.getElementById('edit-status')?.value ?? 'Available';
+    const image = document.getElementById('edit-image')?.value ?? '';
+    const description =
+        document.getElementById('edit-desc')?.value.trim() ?? '';
 
-    if (!id || !name || !price) { showToast('Invalid data.', 'error'); return; }
+    if (!id || !name || !price) {
+        showToast('Invalid data.', 'error');
+        return;
+    }
 
     try {
-        const res  = await fetch('api/products.php', {
-            method:  'POST',
+        const res = await fetch('api/products.php', {
+            method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ action:'edit', id, name, category_id, price, status, image, desc }),
+            body: JSON.stringify({
+                action: 'edit',
+                id,
+                name,
+                category_id,
+                price,
+                status,
+                image,
+                description,
+            }),
         });
         const data = await res.json();
         if (!data.success) throw new Error(data.error);
@@ -217,14 +261,17 @@ async function submitEditProduct() {
 }
 
 async function deleteProduct(id) {
-    const confirmed = await showConfirm('Delete Product', 'Are you sure you want to delete this product? This cannot be undone.');
+    const confirmed = await showConfirm(
+        'Delete Product',
+        'Are you sure you want to delete this product? This cannot be undone.'
+    );
     if (!confirmed) return;
 
     try {
-        const res  = await fetch('api/products.php', {
-            method:  'POST',
+        const res = await fetch('api/products.php', {
+            method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ action: 'delete', id }),
+            body: JSON.stringify({ action: 'delete', id }),
         });
         const data = await res.json();
         if (!data.success) throw new Error(data.error);
@@ -247,33 +294,39 @@ async function deleteProduct(id) {
 
 async function toggleProduct(id) {
     try {
-        const res  = await fetch('api/products.php', {
-            method:  'POST',
+        const res = await fetch('api/products.php', {
+            method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ action: 'toggle', id }),
+            body: JSON.stringify({ action: 'toggle', id }),
         });
         const data = await res.json();
         if (!data.success) throw new Error(data.error);
 
         const newStatus = data.newStatus;
-        const isAvail   = newStatus === 'Available';
+        const isAvail = newStatus === 'Available';
 
         // Update badge in the table row
-        const badge = document.querySelector(`#product-row-${id} .status-badge`);
+        const badge = document.querySelector(
+            `#product-row-${id} .status-badge`
+        );
         if (badge) {
-            badge.className  = `badge ${isAvail ? 'badge-available' : 'badge-unavailable'} status-badge`;
+            badge.className = `badge ${isAvail ? 'badge-available' : 'badge-unavailable'} status-badge`;
             badge.textContent = newStatus;
         }
         // Update badge in the grid card
         const cardBadge = document.querySelector(`#product-card-${id} .badge`);
         if (cardBadge) {
-            cardBadge.className  = `badge ${isAvail ? 'badge-available' : 'badge-unavailable'}`;
+            cardBadge.className = `badge ${isAvail ? 'badge-available' : 'badge-unavailable'}`;
             cardBadge.textContent = newStatus;
         }
         // Flip the toggle button icon in all views (table row & grid card)
-        document.querySelectorAll(`[onclick*="toggleProduct(${id})"] .material-symbols-outlined`).forEach(icon => {
-            icon.textContent = isAvail ? 'visibility_off' : 'visibility';
-        });
+        document
+            .querySelectorAll(
+                `[onclick*="toggleProduct(${id})"] .material-symbols-outlined`
+            )
+            .forEach((icon) => {
+                icon.textContent = isAvail ? 'visibility_off' : 'visibility';
+            });
         showToast(`Product is now ${newStatus}`, 'success');
     } catch (err) {
         showToast('Error toggling product: ' + err.message, 'error');
@@ -283,14 +336,18 @@ async function toggleProduct(id) {
 // ── Client-side search for products ──────────────────────────────────────
 
 function filterProductsTable() {
-    const q = document.getElementById('products-search')?.value.toLowerCase() ?? '';
+    const q =
+        document.getElementById('products-search')?.value.toLowerCase() ?? '';
 
-    document.querySelectorAll('#products-table-body tr[data-name]').forEach(row => {
-        const match = row.dataset.name.includes(q) || row.dataset.category.includes(q);
-        row.style.display = match ? '' : 'none';
-    });
+    document
+        .querySelectorAll('#products-table-body tr[data-name]')
+        .forEach((row) => {
+            const match =
+                row.dataset.name.includes(q) ||
+                row.dataset.category.includes(q);
+            row.style.display = match ? '' : 'none';
+        });
 }
-
 
 // ══════════════════════════════════════════════════════════
 //  MODAL HELPERS
@@ -305,7 +362,7 @@ function closeModal(id) {
 }
 
 // Close modal when clicking the dark overlay
-document.addEventListener('click', e => {
+document.addEventListener('click', (e) => {
     if (e.target.classList.contains('modal-overlay')) {
         e.target.classList.remove('open');
     }

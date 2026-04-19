@@ -1,84 +1,62 @@
 <?php
-/**
- * user-orders.php
- *
- * PHP responsibilities:
- *   - Auth guard (must be logged-in user; admins are redirected to their dashboard)
- *   - Read optional ?date_from=YYYY-MM-DD&date_to=YYYY-MM-DD filters
- *   - Query the logged-in user's orders (newest first), filtered by date range
- *   - Render the table with an expandable detail row per order
- *
- * The expandable row breaks the items_summary string ("2x Coffee, 1x Tea")
- * into a sub-table. We don't have per-item pricing here, so the sub-table
- * shows item name + quantity only.
- *
- * JS responsibilities (loaded from ./user.js):
- *   - toggleRow() — show/hide expandable row (already in ../script.js)
- *   - cancelMyOrder() — POSTs to api/order.php with action: cancel
- */
-
 session_start();
 
 if (!isset($_SESSION['user_id'])) {
-    header('Location: ../login.php');
-    exit;
+    header('Location: ../login.php'); exit;
 }
 if (($_SESSION['role'] ?? 'user') === 'admin') {
-    header('Location: ../admin/admin/admin-dashboard.php');
-    exit;
+    header('Location: ../admin/admin-dashboard.php'); exit;
 }
 
-require_once __DIR__ . '/db.php';
+require_once '../db.php';
 
 $userId   = (int)$_SESSION['user_id'];
-$userName = htmlspecialchars($_SESSION['user_name'] ?? 'User');
+$userName = htmlspecialchars($_SESSION['name'] ?? 'User');
 
-// ── Sanitize date filters ────────────────────────────────────────────────
+// ── Date filters ─────────────────────────────────────────────────────
 function clean_date(?string $s): ?string {
     if (!$s) return null;
     $d = DateTime::createFromFormat('Y-m-d', $s);
     return ($d && $d->format('Y-m-d') === $s) ? $s : null;
 }
-
 $dateFrom = clean_date($_GET['date_from'] ?? null);
 $dateTo   = clean_date($_GET['date_to']   ?? null);
 
-// ── Build query ──────────────────────────────────────────────────────────
-$sql = "
-    SELECT o.id, o.created_at, o.total, o.status, o.room, o.notes,
-           (SELECT GROUP_CONCAT(CONCAT(oi.quantity, 'x ', p.name) SEPARATOR ', ')
-            FROM order_items oi
-            JOIN products p ON oi.product_id = p.id
-            WHERE oi.order_id = o.id) AS items_summary
-    FROM   orders o
-    WHERE  o.user_id = :uid
-";
-$params = [':uid' => $userId];
+// Date validation
+$dateError = '';
+if ($dateFrom && $dateTo && $dateFrom > $dateTo) {
+    $dateError = '"Date from" cannot be after "Date to".';
+    $dateTo = null;
+}
 
-if ($dateFrom) {
-    $sql .= " AND DATE(o.created_at) >= :df";
-    $params[':df'] = $dateFrom;
-}
-if ($dateTo) {
-    $sql .= " AND DATE(o.created_at) <= :dt";
-    $params[':dt'] = $dateTo;
-}
+// ── Query orders ─────────────────────────────────────────────────────
+$sql    = "SELECT o.id, o.created_at, o.total, o.status, o.room, o.notes,
+                  (SELECT GROUP_CONCAT(CONCAT(oi.quantity,'x ',p.name) SEPARATOR ', ')
+                   FROM order_items oi
+                   JOIN products p ON oi.product_id = p.id
+                   WHERE oi.order_id = o.id) AS items_summary
+           FROM orders o
+           WHERE o.user_id = ?";
+$params = [$userId];
+
+if ($dateFrom) { $sql .= " AND DATE(o.created_at) >= ?"; $params[] = $dateFrom; }
+if ($dateTo)   { $sql .= " AND DATE(o.created_at) <= ?"; $params[] = $dateTo; }
 $sql .= " ORDER BY o.created_at DESC";
 
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $orders = $stmt->fetchAll();
 
-// ── Fetch detailed items for the expandable rows ─────────────────────────
+// ── Per-order items for expandable rows ──────────────────────────────
 $orderIds = array_column($orders, 'id');
 $itemsMap = [];
 if ($orderIds) {
-    $place = implode(',', array_fill(0, count($orderIds), '?'));
+    $in = implode(',', array_fill(0, count($orderIds), '?'));
     $itemStmt = $pdo->prepare("
-        SELECT oi.order_id, oi.quantity AS qty, p.name
+        SELECT oi.order_id, oi.quantity AS qty, oi.unit_price, p.name
         FROM   order_items oi
         JOIN   products p ON oi.product_id = p.id
-        WHERE  oi.order_id IN ($place)
+        WHERE  oi.order_id IN ($in)
     ");
     $itemStmt->execute($orderIds);
     foreach ($itemStmt->fetchAll() as $it) {
@@ -86,80 +64,125 @@ if ($orderIds) {
     }
 }
 
+// ── User profile picture ──────────────────────────────────────────────
+$myRow   = $pdo->prepare("SELECT profile_picture FROM users WHERE id = ? LIMIT 1");
+$myRow->execute([$userId]);
+$myPhoto = $myRow->fetchColumn() ?: '';
 
 function status_badge_class(string $status): string {
-    $status = strtolower($status);
-    $map = [
+    return match(strtolower($status)) {
         'processing'       => 'badge-processing',
         'out_for_delivery' => 'badge-processing',
         'done'             => 'badge-delivered',
-        'cancelled'        => 'badge-unavailable',
-    ];
-    return $map[$status] ?? 'badge-processing';
+        'cancelled'        => 'badge-cancelled',
+        default            => 'badge-processing',
+    };
+}
+function status_label(string $status): string {
+    return match(strtolower($status)) {
+        'processing'       => 'Processing',
+        'out_for_delivery' => 'Out for Delivery',
+        'done'             => 'Done',
+        'cancelled'        => 'Cancelled',
+        default            => ucfirst($status),
+    };
 }
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cafetria | My Orders</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="../style.css">
+    <style>
+    /* ── Page-specific overrides ── */
+    body {
+        display: block;
+    }
+
+    .table-container {
+        background: var(--surface-lowest);
+        border: 1px solid #e8c9b8;
+        border-radius: 1.25rem;
+        overflow: hidden;
+    }
+    </style>
 </head>
+
 <body>
-    <!-- ─── User Top Navbar ─────────────────────── -->
+
+    <!-- ─── Navbar ─────────────────────────────── -->
     <nav class="navbar">
         <div class="container">
             <div class="logo">
-                <span class="material-symbols-outlined" style="color: var(--primary);">local_cafe</span>
+                <span class="material-symbols-outlined" style="color:var(--primary)">local_cafe</span>
                 <span>Cafetria</span>
             </div>
             <ul class="nav-links">
                 <li><a href="user-home.php">Home</a></li>
                 <li><a href="user-orders.php" class="active">My Orders</a></li>
-                <li><a href="logout.php">Logout</a></li>
+                <li><a href="../logout.php">Logout</a></li>
             </ul>
             <div class="user-profile">
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=<?= urlencode($userName) ?>" alt="User" class="avatar">
+                <?php if ($myPhoto && file_exists('../uploads/' . $myPhoto)): ?>
+                <img src="../uploads/<?= htmlspecialchars($myPhoto) ?>" alt="<?= $userName ?>" class="avatar">
+                <?php else: ?>
+                <div class="avatar"
+                    style="display:flex;align-items:center;justify-content:center;background:var(--primary-container);color:#fff;font-weight:700;font-size:1rem;">
+                    <?= mb_strtoupper(mb_substr($userName, 0, 1)) ?>
+                </div>
+                <?php endif; ?>
                 <div class="user-info">
                     <p class="user-name"><?= $userName ?></p>
-                    <p class="user-role"><?= ($_SESSION['role'] ?? 'user') === 'admin' ? 'ADMIN' : 'CUSTOMER' ?></p>
+                    <p class="user-role">CUSTOMER</p>
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- ─── Main Content ────────────────────────── -->
-    <main class="container" style="padding-top: var(--spacing-lg); padding-bottom: var(--spacing-xl);">
-        <header class="page-header">
-            <div>
-                <h1>My <span class="highlight">Orders</span></h1>
-                <p>View your order history and track statuses.</p>
-            </div>
-        </header>
+    <!-- ─── Main ───────────────────────────────── -->
+    <main class="container" style="padding-top:var(--spacing-lg);padding-bottom:var(--spacing-xl);">
 
-        <!-- Filter Bar (GET form so the URL is shareable / bookmarkable) -->
-        <form class="filter-bar" method="GET" action="user-orders.php">
+        <div class="page-header">
+            <h1>My <span class="highlight">Orders</span></h1>
+            <p>View your order history and track statuses.</p>
+        </div>
+
+        <!-- Date filter error -->
+        <?php if ($dateError): ?>
+        <div
+            style="background:#fde8e9;border:1px solid #f5c9c9;color:var(--error);padding:.65rem 1rem;border-radius:.75rem;font-size:.82rem;margin-bottom:1rem;">
+            <?= htmlspecialchars($dateError) ?>
+        </div>
+        <?php endif; ?>
+
+        <!-- Filter Bar -->
+        <form class="filter-bar" method="GET" action="user-orders.php" id="filterForm" novalidate>
             <div class="filter-group">
                 <label>Date From</label>
-                <input type="date" class="form-control" name="date_from"
-                       value="<?= htmlspecialchars($dateFrom ?? '') ?>">
+                <input type="date" class="form-control" name="date_from" id="f-from"
+                    value="<?= htmlspecialchars($dateFrom ?? '') ?>">
             </div>
             <div class="filter-group">
                 <label>Date To</label>
-                <input type="date" class="form-control" name="date_to"
-                       value="<?= htmlspecialchars($dateTo ?? '') ?>">
+                <input type="date" class="form-control" name="date_to" id="f-to"
+                    value="<?= htmlspecialchars($dateTo ?? '') ?>">
             </div>
-            <button class="btn btn-secondary" type="submit">
+            <button class="btn btn-secondary" type="submit" style="align-self:flex-end;">
                 <span class="material-symbols-outlined" style="font-size:1rem;">filter_alt</span>
                 Filter
             </button>
             <?php if ($dateFrom || $dateTo): ?>
-                <a class="btn btn-secondary" href="user-orders.php">Clear</a>
+            <a class="btn btn-secondary" href="user-orders.php" style="align-self:flex-end;">Clear</a>
             <?php endif; ?>
         </form>
 
@@ -168,7 +191,7 @@ function status_badge_class(string $status): string {
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th style="width:50px;"></th>
+                        <th style="width:40px;"></th>
                         <th>Order Date</th>
                         <th>Items</th>
                         <th>Room</th>
@@ -179,81 +202,94 @@ function status_badge_class(string $status): string {
                 </thead>
                 <tbody>
                     <?php if (empty($orders)): ?>
-                        <tr>
-                            <td colspan="7" style="text-align:center; padding:2rem; color: var(--on-surface-variant);">
-                                You have no orders<?= ($dateFrom || $dateTo) ? ' in this date range' : ' yet' ?>.
-                            </td>
-                        </tr>
+                    <tr>
+                        <td colspan="7" style="text-align:center;padding:2.5rem;color:var(--on-surface-variant);">
+                            You have no orders<?= ($dateFrom || $dateTo) ? ' in this date range' : ' yet' ?>.
+                        </td>
+                    </tr>
                     <?php else: ?>
-                        <?php foreach ($orders as $o):
+                    <?php foreach ($orders as $o):
                             $rowId  = 'order-' . (int)$o['id'];
                             $items  = $itemsMap[$o['id']] ?? [];
                             $notes  = trim((string)$o['notes']);
                             $status = (string)$o['status'];
                         ?>
-                        <tr id="row-<?= (int)$o['id'] ?>">
-                            <td class="expand-btn" onclick="toggleRow('<?= $rowId ?>')">+</td>
-                            <td><?= htmlspecialchars($o['created_at']) ?></td>
-                            <td><?= htmlspecialchars($o['items_summary']) ?></td>
-                            <td>Room <?= htmlspecialchars($o['room']) ?></td>
-                            <td>EGP <?= number_format((float)$o['total']) ?></td>
-                            <td>
-                                <span class="badge <?= status_badge_class($status) ?>">
-                                    <?= htmlspecialchars($status) ?>
-                                </span>
-                            </td>
-                            <td>
-                                <?php if (strtolower($status) === 'processing'): ?>
-                                    <button class="btn btn-danger btn-sm"
-                                            onclick="cancelMyOrder(<?= (int)$o['id'] ?>, this)">
-                                        Cancel
-                                    </button>
-                                <?php else: ?>
-                                    <span style="color: var(--on-surface-variant); font-size:0.8125rem;">—</span>
-                                <?php endif; ?>
-                            </td>
-                        </tr>
-                        <tr id="<?= $rowId ?>" class="expand-row">
-                            <td colspan="7">
-                                <div style="padding: 1rem;">
-                                    <table class="sub-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Item</th>
-                                                <th>Qty</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php foreach ($items as $it): ?>
-                                                <tr>
-                                                    <td><?= htmlspecialchars($it['name']) ?></td>
-                                                    <td><?= (int)$it['qty'] ?></td>
-                                                </tr>
-                                            <?php endforeach; ?>
-                                        </tbody>
-                                    </table>
-                                    <?php if ($notes !== ''): ?>
-                                    <div class="notes-block" style="margin-top: 0.75rem;">
-                                        <div class="notes-label">
-                                            <span class="material-symbols-outlined" style="font-size:0.875rem;">edit_note</span>
-                                            Notes
-                                        </div>
-                                        <p class="notes-text">"<?= htmlspecialchars($notes) ?>"</p>
+                    <tr id="row-<?= (int)$o['id'] ?>">
+                        <td class="expand-btn" onclick="toggleRow('<?= $rowId ?>')" id="btn-<?= $rowId ?>">+</td>
+                        <td><?= date('Y/m/d H:i', strtotime($o['created_at'])) ?></td>
+                        <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                            <?= htmlspecialchars($o['items_summary'] ?? '—') ?>
+                        </td>
+                        <td>Room <?= htmlspecialchars($o['room']) ?></td>
+                        <td style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;">
+                            EGP <?= number_format((float)$o['total']) ?>
+                        </td>
+                        <td>
+                            <span class="badge <?= status_badge_class($status) ?>">
+                                <?= status_label($status) ?>
+                            </span>
+                        </td>
+                        <td>
+                            <?php if (strtolower($status) === 'processing'): ?>
+                            <button class="btn btn-danger btn-sm" onclick="cancelMyOrder(<?= (int)$o['id'] ?>, this)">
+                                Cancel
+                            </button>
+                            <?php else: ?>
+                            <span style="color:var(--on-surface-variant);font-size:.8125rem;">—</span>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    <!-- Expandable detail row -->
+                    <tr id="<?= $rowId ?>" class="expand-row">
+                        <td colspan="7">
+                            <div style="padding:1rem 1.25rem;">
+                                <table class="sub-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Item</th>
+                                            <th>Qty</th>
+                                            <th>Unit Price</th>
+                                            <th>Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($items as $it): ?>
+                                        <tr>
+                                            <td><?= htmlspecialchars($it['name']) ?></td>
+                                            <td><?= (int)$it['qty'] ?></td>
+                                            <td><?= number_format((float)$it['unit_price'], 2) ?> EGP</td>
+                                            <td style="font-weight:600;">
+                                                <?= number_format($it['unit_price'] * $it['qty'], 2) ?> EGP</td>
+                                        </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                                <?php if ($notes !== ''): ?>
+                                <div class="notes-block" style="margin-top:.75rem;">
+                                    <div class="notes-label">
+                                        <span class="material-symbols-outlined"
+                                            style="font-size:.875rem;">edit_note</span>
+                                        Notes
                                     </div>
-                                    <?php endif; ?>
+                                    <p class="notes-text">"<?= htmlspecialchars($notes) ?>"</p>
                                 </div>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
+                                <?php endif; ?>
+                            </div>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
                     <?php endif; ?>
                 </tbody>
             </table>
         </div>
     </main>
-    <!-- Toast Notifications Container -->
-    <div id="toast-container"></div>
 
-    <!-- Custom Confirmation Modal -->
+    <!-- Toast container (bottom-center for orders page — no cart panel here) -->
+    <div id="toast-container"
+        style="position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:.5rem;min-width:300px;pointer-events:none;">
+    </div>
+
+    <!-- Confirm Modal -->
     <div id="confirm-modal-overlay">
         <div class="confirm-modal">
             <div class="confirm-modal-icon">
@@ -268,7 +304,27 @@ function status_badge_class(string $status): string {
         </div>
     </div>
 
-    <script src="../script.js"></script>
+    <script>
+    // Toggle expandable row
+    function toggleRow(id) {
+        const row = document.getElementById(id);
+        const btn = document.getElementById('btn-' + id);
+        if (!row) return;
+        const open = row.classList.toggle('open');
+        if (btn) btn.textContent = open ? '−' : '+';
+    }
+
+    // Client-side date filter validation
+    document.getElementById('filterForm').addEventListener('submit', function(e) {
+        const from = document.getElementById('f-from').value;
+        const to = document.getElementById('f-to').value;
+        if (from && to && from > to) {
+            alert('"Date from" cannot be after "Date to".');
+            e.preventDefault();
+        }
+    });
+    </script>
     <script src="user.js"></script>
 </body>
+
 </html>
