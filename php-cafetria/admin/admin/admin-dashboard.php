@@ -6,14 +6,13 @@
  *   - Auth guard
  *   - Query live stats from DB
  *   - Render the live orders table rows
- *   - Pass data as JS variables for the AI insight (client-side Claude call)
  */
 session_start();
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    header('Location: ../login.php'); exit;
+    header('Location: ../../login.php'); exit;
 }
 
-require_once '../db.php'; // Provides $pdo (PDO instance)
+require_once __DIR__ . '/../../db.php'; // Updated path to the new central db.php
 
 $today = date('Y-m-d');
 
@@ -67,13 +66,9 @@ $activePage = 'dashboard';
     <title>Cafetria — Dashboard</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap"
-        rel="stylesheet">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
-        rel="stylesheet">
-    <link rel="stylesheet" href="../style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
@@ -86,11 +81,6 @@ $activePage = 'dashboard';
         <div class="topbar">
             <h2>Dashboard</h2>
             <div class="topbar-actions">
-                <span class="ai-chip">
-                    <span class="material-symbols-outlined"
-                        style="font-size:14px;font-variation-settings:'FILL' 1">auto_awesome</span>
-                    AI Insights Active
-                </span>
                 <a href="admin-dashboard.php" class="btn btn-secondary btn-sm">
                     <span class="material-symbols-outlined">refresh</span>Refresh
                 </a>
@@ -134,21 +124,6 @@ $activePage = 'dashboard';
                     </span>
                 </div>
 
-            </div>
-
-            <!-- ── AI Daily Insight (rendered by JS / Claude API) ── -->
-            <div class="section-card" id="ai-insight-card">
-                <div class="section-header">
-                    <div class="section-title">
-                        <span class="material-symbols-outlined">auto_awesome</span>
-                        AI Daily Insight
-                    </div>
-                    <button class="btn btn-secondary btn-sm" onclick="generateDailyInsight()">Refresh</button>
-                </div>
-                <div class="loading-state" id="ai-insight-body">
-                    <div class="spinner"></div>
-                    <p class="loading-text">Generating AI insight...</p>
-                </div>
             </div>
 
             <!-- ── Live Incoming Orders ────────────────────── -->
@@ -213,21 +188,7 @@ $activePage = 'dashboard';
         </div><!-- /page-content -->
     </main>
 
-    <!-- Pass PHP data to JS so the Claude call has real numbers -->
-    <script>
-    const DASHBOARD_DATA = {
-        totalOrders: <?= $totalOrders ?>,
-        processing: <?= $processing ?>,
-        revenue: <?= $revenue ?>,
-        activeProducts: <?= $activeProducts ?>,
-        unavailableProducts: <?= $unavailableProducts ?>,
-        topProducts: <?= json_encode($topProducts) ?>
-    };
-    </script>
     <script src="admin.js"></script>
-    <script>
-    generateDailyInsight();
-    </script>
 </body>
 
 </html>

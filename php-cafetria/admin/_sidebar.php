@@ -1,10 +1,6 @@
 <?php
 /**
  * _sidebar.php — reusable admin sidebar
- *
- * Include at the top of every admin page AFTER session_start().
- * Set $activePage before including:
- *   $activePage = 'dashboard' | 'orders' | 'products' | 'users' | 'manual' | 'checks'
  */
 $nav = [
     'dashboard' => ['icon' => 'dashboard',       'label' => 'Dashboard',    'href' => 'admin-dashboard.php'],
@@ -40,7 +36,7 @@ $userInitials = strtoupper(substr($_SESSION['user_name'] ?? 'AD', 0, 2));
         <?php endforeach; ?>
 
         <span class="nav-label">System</span>
-        <a href="../../logout.php" class="nav-item logout-link">
+        <a href="../logout.php" class="nav-item logout-link">
             <span class="material-symbols-outlined">logout</span>Logout
         </a>
     </nav>
