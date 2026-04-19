@@ -97,8 +97,15 @@ $categories = $pdo->query("
                 <li><a href="../logout.php">Logout</a></li>
             </ul>
             <div class="user-profile">
-                <?php if ($myPhoto && file_exists('../uploads/' . $myPhoto)): ?>
-                <img src="../uploads/<?= htmlspecialchars($myPhoto) ?>" alt="<?= $userName ?>" class="avatar">
+                <?php 
+                    $avatarSrc = $myPhoto;
+                    if ($avatarSrc && !str_starts_with($avatarSrc, 'http')) {
+                        $avatarSrc = '../uploads/' . $avatarSrc;
+                        if (!file_exists($avatarSrc)) $avatarSrc = '';
+                    }
+                    if ($avatarSrc): 
+                ?>
+                <img src="<?= htmlspecialchars($avatarSrc) ?>" alt="<?= $userName ?>" class="avatar">
                 <?php else: ?>
                 <div class="avatar"
                     style="display:flex;align-items:center;justify-content:center;background:var(--primary-container);color:#fff;font-weight:700;font-size:1rem;">
@@ -228,10 +235,26 @@ $categories = $pdo->query("
                         data-name="<?= htmlspecialchars($p['name']) ?>" data-price="<?= (int)$p['price'] ?>"
                         data-category="<?= htmlspecialchars($p['category'] ?? '') ?>" onclick="addToCart(this)">
                         <div class="img-wrapper">
-                            <?php if ($p['image'] && file_exists('../uploads/' . $p['image'])): ?>
-                            <img src="../uploads/<?= htmlspecialchars($p['image']) ?>"
+                            <?php 
+                                $imgSrc = $p['image'];
+                                $showPlaceholder = true;
+                                if ($imgSrc) {
+                                    if (str_starts_with($imgSrc, 'http')) {
+                                        $showPlaceholder = false;
+                                    } else {
+                                        $localPath = '../uploads/' . $imgSrc;
+                                        if (file_exists($localPath)) {
+                                            $imgSrc = $localPath;
+                                            $showPlaceholder = false;
+                                        }
+                                    }
+                                }
+                                
+                                if (!$showPlaceholder): 
+                            ?>
+                            <img src="<?= htmlspecialchars($imgSrc) ?>"
                                 alt="<?= htmlspecialchars($p['name']) ?>"
-                                style="width:100%;height:100%;object-fit:cover;">
+                                class="product-img">
                             <?php else: ?>
                             <span class="material-symbols-outlined"
                                 style="font-size:3rem;color:var(--primary-container);">local_cafe</span>

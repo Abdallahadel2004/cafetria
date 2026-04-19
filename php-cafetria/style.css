@@ -886,7 +886,7 @@ select.form-control {
 
 .product-card .product-img {
     width: 100%;
-    height: 160px;
+    height: 100%;
     object-fit: cover;
     transition: transform 0.5s ease;
 }
@@ -899,6 +899,11 @@ select.form-control {
     overflow: hidden;
     border-radius: var(--radius-xl) var(--radius-xl) 0 0;
     position: relative;
+    height: 180px;
+    background: var(--surface-container);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .product-card .price-badge {
