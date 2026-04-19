@@ -13,8 +13,8 @@
 
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'cafetria');
-define('DB_USER', 'root');       // ← change to your DB user
-define('DB_PASS', '');           // ← change to your DB password
+define('DB_USER', 'mahmoud');       // ← change to your DB user
+define('DB_PASS', '123456');           // ← change to your DB password
 define('DB_CHAR', 'utf8mb4');
 
 try {
@@ -30,5 +30,5 @@ try {
     );
 } catch (PDOException $e) {
     http_response_code(500);
-    die(json_encode(['success' => false, 'error' => 'Database connection failed']));
+    die(json_encode(['success' => false, 'error' => 'Database connection faddiled']));
 }

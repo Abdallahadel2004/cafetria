@@ -62,7 +62,9 @@
 }
 
 /* ── Reset & Base ─────────────────────────────── */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -79,7 +81,11 @@ body {
     min-height: 100vh;
 }
 
-h1, h2, h3, h4, h5 {
+h1,
+h2,
+h3,
+h4,
+h5 {
     font-family: var(--font-headline);
     font-weight: 700;
     color: var(--on-surface);
@@ -92,13 +98,21 @@ a {
     transition: all 0.2s ease;
 }
 
-ul { list-style: none; }
+ul {
+    list-style: none;
+}
 
-img { display: block; }
+img {
+    display: block;
+}
 
 /* ── Material Symbols ─────────────────────────── */
 .material-symbols-outlined {
-    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24;
     vertical-align: middle;
 }
 
@@ -141,7 +155,9 @@ img { display: block; }
     letter-spacing: -0.02em;
 }
 
-.logo-icon { font-size: 1.5rem; }
+.logo-icon {
+    font-size: 1.5rem;
+}
 
 .nav-links {
     display: flex;
@@ -431,7 +447,11 @@ img { display: block; }
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%);
+    background: linear-gradient(
+        135deg,
+        var(--primary) 0%,
+        var(--primary-container) 100%
+    );
     color: var(--on-primary);
     box-shadow: 0 4px 16px rgba(163, 55, 0, 0.2);
 }
@@ -467,7 +487,9 @@ img { display: block; }
     color: white;
 }
 
-.full-width { width: 100%; }
+.full-width {
+    width: 100%;
+}
 
 .btn-lg {
     padding: 1rem 2rem;
@@ -532,8 +554,12 @@ img { display: block; }
     font-weight: 600;
 }
 
-.trend-up { color: var(--secondary); }
-.trend-down { color: var(--error); }
+.trend-up {
+    color: var(--secondary);
+}
+.trend-down {
+    color: var(--error);
+}
 
 /* ═══════════════════════════════════════════════
    Tables (Orders, Products, Users, Checks)
@@ -1071,20 +1097,35 @@ select.form-control {
    Animations
    ═══════════════════════════════════════════════ */
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 @keyframes slideIn {
-    from { opacity: 0; transform: translateX(-12px); }
-    to { opacity: 1; transform: translateX(0); }
+    from {
+        opacity: 0;
+        transform: translateX(-12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
 .fade-in {
     animation: fadeIn 0.5s ease forwards;
 }
 
-.stat-card, .table-container, .card, .form-container {
+.stat-card,
+.table-container,
+.card,
+.form-container {
     animation: fadeIn 0.5s ease forwards;
 }
 

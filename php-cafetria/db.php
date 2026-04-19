@@ -1,7 +1,7 @@
 <?php
 define('DB_HOST', 'localhost');
-define('DB_USER', 'root');
-define('DB_PASS', '');
+define('DB_USER', 'mahmoud');
+define('DB_PASS', '123456');
 define('DB_NAME', 'cafetria');
 
 try {
@@ -17,5 +17,5 @@ try {
     );
 } catch (PDOException $e) {
     http_response_code(500);
-    die('Database connection failed: ' . $e->getMessage());
+    die('Database connection failedddddddddd: ' . $e->getMessage());
 }

@@ -39,7 +39,7 @@ if ($action === 'add') {
     $status      = in_array($body['status'] ?? '', ['Available','Unavailable'])
                     ? $body['status'] : 'Available';
     $image       = clean($body['image'] ?? '');
-    $desc        = clean($body['desc']  ?? '');
+    $description = clean($body['description']  ?? '');
 
     if (!$name || !$category_id || $price <= 0) {
         http_response_code(400);
@@ -49,7 +49,7 @@ if ($action === 'add') {
 
     $stmt = $pdo->prepare("
         INSERT INTO products (name, category_id, price, status, image, description, total_orders, created_at)
-        VALUES (:name, :category_id, :price, :status, :image, :desc, 0, NOW())
+        VALUES (:name, :category_id, :price, :status, :image, :description, 0, NOW())
     ");
     $stmt->execute([
         ':name'        => $name,
@@ -57,7 +57,7 @@ if ($action === 'add') {
         ':price'       => $price,
         ':status'      => $status,
         ':image'       => $image,
-        ':desc'        => $desc,
+        ':description' => $description,
     ]);
 
     echo json_encode(['success' => true, 'id' => (int)$pdo->lastInsertId()]);
@@ -73,7 +73,7 @@ if ($action === 'edit') {
     $status      = in_array($body['status'] ?? '', ['Available','Unavailable'])
                     ? $body['status'] : 'Available';
     $image       = clean($body['image'] ?? '');
-    $desc        = clean($body['desc']  ?? '');
+    $description = clean($body['description']  ?? '');
 
     if (!$id || !$name || !$category_id || $price <= 0) {
         http_response_code(400);
@@ -84,7 +84,7 @@ if ($action === 'edit') {
     $stmt = $pdo->prepare("
         UPDATE products
         SET    name = :name, category_id = :category_id, price = :price,
-               status = :status, image = :image, description = :desc
+               status = :status, image = :image, description = :description
         WHERE  id = :id
     ");
     $stmt->execute([
@@ -93,7 +93,7 @@ if ($action === 'edit') {
         ':price'       => $price,
         ':status'      => $status,
         ':image'       => $image,
-        ':desc'        => $desc,
+        ':description' => $description,
         ':id'          => $id,
     ]);
 
