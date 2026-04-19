@@ -10,7 +10,7 @@
  */
 session_start();
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    header('Location: ../login.html'); exit;
+    header('Location: ../login.php'); exit;
 }
 
 require_once '../db.php'; // Provides $pdo (PDO instance)
@@ -60,163 +60,174 @@ $activePage = 'dashboard';
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cafetria — Dashboard</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
-<link rel="stylesheet" href="../style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cafetria — Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../style.css">
 </head>
+
 <body>
 
-<?php include '_sidebar.php'; ?>
+    <?php include '_sidebar.php'; ?>
 
-<main class="main">
+    <main class="main">
 
-    <!-- Topbar -->
-    <div class="topbar">
-        <h2>Dashboard</h2>
-        <div class="topbar-actions">
-            <span class="ai-chip">
-                <span class="material-symbols-outlined" style="font-size:14px;font-variation-settings:'FILL' 1">auto_awesome</span>
-                AI Insights Active
-            </span>
-            <a href="admin-dashboard.php" class="btn btn-secondary btn-sm">
-                <span class="material-symbols-outlined">refresh</span>Refresh
-            </a>
-        </div>
-    </div>
-
-    <div class="page-content">
-
-        <!-- ── Stat Cards ─────────────────────────────── -->
-        <div class="stats-grid">
-
-            <div class="stat-card">
-                <div class="stat-icon"><span class="material-symbols-outlined">shopping_bag</span></div>
-                <div class="stat-value"><?= $totalOrders ?></div>
-                <div class="stat-label">Total Orders Today</div>
-                <span class="stat-change up">▲ live count</span>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-icon"><span class="material-symbols-outlined">pending_actions</span></div>
-                <div class="stat-value"><?= $processing ?></div>
-                <div class="stat-label">Orders Processing</div>
-                <span class="stat-change <?= $processing > 5 ? 'down' : 'up' ?>">
-                    <?= $processing > 5 ? 'High queue' : 'Under control' ?>
+        <!-- Topbar -->
+        <div class="topbar">
+            <h2>Dashboard</h2>
+            <div class="topbar-actions">
+                <span class="ai-chip">
+                    <span class="material-symbols-outlined"
+                        style="font-size:14px;font-variation-settings:'FILL' 1">auto_awesome</span>
+                    AI Insights Active
                 </span>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-icon"><span class="material-symbols-outlined">payments</span></div>
-                <div class="stat-value">EGP <?= number_format($revenue) ?></div>
-                <div class="stat-label">Revenue Today</div>
-                <span class="stat-change up">▲ active</span>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-icon"><span class="material-symbols-outlined">restaurant_menu</span></div>
-                <div class="stat-value"><?= $activeProducts ?></div>
-                <div class="stat-label">Active Products</div>
-                <span class="stat-change <?= $unavailableProducts > 0 ? 'down' : 'up' ?>">
-                    <?= $unavailableProducts ?> unavailable
-                </span>
-            </div>
-
-        </div>
-
-        <!-- ── AI Daily Insight (rendered by JS / Claude API) ── -->
-        <div class="section-card" id="ai-insight-card">
-            <div class="section-header">
-                <div class="section-title">
-                    <span class="material-symbols-outlined">auto_awesome</span>
-                    AI Daily Insight
-                </div>
-                <button class="btn btn-secondary btn-sm" onclick="generateDailyInsight()">Refresh</button>
-            </div>
-            <div class="loading-state" id="ai-insight-body">
-                <div class="spinner"></div>
-                <p class="loading-text">Generating AI insight...</p>
+                <a href="admin-dashboard.php" class="btn btn-secondary btn-sm">
+                    <span class="material-symbols-outlined">refresh</span>Refresh
+                </a>
             </div>
         </div>
 
-        <!-- ── Live Incoming Orders ────────────────────── -->
-        <div class="section-card">
-            <div class="section-header">
-                <div class="section-title">
-                    <span class="live-dot"></span>
-                    <span class="material-symbols-outlined">receipt_long</span>
-                    Live Incoming Orders
+        <div class="page-content">
+
+            <!-- ── Stat Cards ─────────────────────────────── -->
+            <div class="stats-grid">
+
+                <div class="stat-card">
+                    <div class="stat-icon"><span class="material-symbols-outlined">shopping_bag</span></div>
+                    <div class="stat-value"><?= $totalOrders ?></div>
+                    <div class="stat-label">Total Orders Today</div>
+                    <span class="stat-change up">▲ live count</span>
                 </div>
-                <a href="admin-orders.php" class="btn btn-secondary btn-sm">View All</a>
+
+                <div class="stat-card">
+                    <div class="stat-icon"><span class="material-symbols-outlined">pending_actions</span></div>
+                    <div class="stat-value"><?= $processing ?></div>
+                    <div class="stat-label">Orders Processing</div>
+                    <span class="stat-change <?= $processing > 5 ? 'down' : 'up' ?>">
+                        <?= $processing > 5 ? 'High queue' : 'Under control' ?>
+                    </span>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon"><span class="material-symbols-outlined">payments</span></div>
+                    <div class="stat-value">EGP <?= number_format($revenue) ?></div>
+                    <div class="stat-label">Revenue Today</div>
+                    <span class="stat-change up">▲ active</span>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon"><span class="material-symbols-outlined">restaurant_menu</span></div>
+                    <div class="stat-value"><?= $activeProducts ?></div>
+                    <div class="stat-label">Active Products</div>
+                    <span class="stat-change <?= $unavailableProducts > 0 ? 'down' : 'up' ?>">
+                        <?= $unavailableProducts ?> unavailable
+                    </span>
+                </div>
+
             </div>
-            <div class="table-wrap">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Order #</th>
-                            <th>Customer</th>
-                            <th>Items</th>
-                            <th>Room / Ext</th>
-                            <th>Total</th>
-                            <th>Time</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    <?php if (empty($liveOrders)): ?>
-                        <tr>
-                            <td colspan="7" style="text-align:center;padding:2rem;color:var(--on-surface-variant)">
-                                No pending orders right now
-                            </td>
-                        </tr>
-                    <?php else: ?>
-                        <?php foreach ($liveOrders as $o): ?>
-                        <tr>
-                            <td><strong style="color:var(--primary)">#<?= htmlspecialchars($o['id']) ?></strong></td>
-                            <td><?= htmlspecialchars($o['customer']) ?></td>
-                            <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
-                                <?= htmlspecialchars($o['items_summary']) ?>
-                            </td>
-                            <td><?= htmlspecialchars($o['room']) ?> / <em><?= htmlspecialchars($o['ext']) ?></em></td>
-                            <td><strong>EGP <?= number_format($o['total']) ?></strong></td>
-                            <td style="font-size:0.78rem"><?= htmlspecialchars(substr($o['created_at'], 11, 5)) ?></td>
-                            <td>
-                                <!-- AJAX deliver — no page reload -->
-                                <button class="btn btn-primary btn-sm"
+
+            <!-- ── AI Daily Insight (rendered by JS / Claude API) ── -->
+            <div class="section-card" id="ai-insight-card">
+                <div class="section-header">
+                    <div class="section-title">
+                        <span class="material-symbols-outlined">auto_awesome</span>
+                        AI Daily Insight
+                    </div>
+                    <button class="btn btn-secondary btn-sm" onclick="generateDailyInsight()">Refresh</button>
+                </div>
+                <div class="loading-state" id="ai-insight-body">
+                    <div class="spinner"></div>
+                    <p class="loading-text">Generating AI insight...</p>
+                </div>
+            </div>
+
+            <!-- ── Live Incoming Orders ────────────────────── -->
+            <div class="section-card">
+                <div class="section-header">
+                    <div class="section-title">
+                        <span class="live-dot"></span>
+                        <span class="material-symbols-outlined">receipt_long</span>
+                        Live Incoming Orders
+                    </div>
+                    <a href="admin-orders.php" class="btn btn-secondary btn-sm">View All</a>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Order #</th>
+                                <th>Customer</th>
+                                <th>Items</th>
+                                <th>Room / Ext</th>
+                                <th>Total</th>
+                                <th>Time</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (empty($liveOrders)): ?>
+                            <tr>
+                                <td colspan="7" style="text-align:center;padding:2rem;color:var(--on-surface-variant)">
+                                    No pending orders right now
+                                </td>
+                            </tr>
+                            <?php else: ?>
+                            <?php foreach ($liveOrders as $o): ?>
+                            <tr>
+                                <td><strong style="color:var(--primary)">#<?= htmlspecialchars($o['id']) ?></strong>
+                                </td>
+                                <td><?= htmlspecialchars($o['customer']) ?></td>
+                                <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+                                    <?= htmlspecialchars($o['items_summary']) ?>
+                                </td>
+                                <td><?= htmlspecialchars($o['room']) ?> / <em><?= htmlspecialchars($o['ext']) ?></em>
+                                </td>
+                                <td><strong>EGP <?= number_format($o['total']) ?></strong></td>
+                                <td style="font-size:0.78rem"><?= htmlspecialchars(substr($o['created_at'], 11, 5)) ?>
+                                </td>
+                                <td>
+                                    <!-- AJAX deliver — no page reload -->
+                                    <button class="btn btn-primary btn-sm"
                                         onclick="deliverOrder(<?= (int)$o['id'] ?>, this)">
-                                    <span class="material-symbols-outlined">check</span>Deliver
-                                </button>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                    </tbody>
-                </table>
+                                        <span class="material-symbols-outlined">check</span>Deliver
+                                    </button>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
 
-    </div><!-- /page-content -->
-</main>
+        </div><!-- /page-content -->
+    </main>
 
-<!-- Pass PHP data to JS so the Claude call has real numbers -->
-<script>
-const DASHBOARD_DATA = {
-    totalOrders:         <?= $totalOrders ?>,
-    processing:          <?= $processing ?>,
-    revenue:             <?= $revenue ?>,
-    activeProducts:      <?= $activeProducts ?>,
-    unavailableProducts: <?= $unavailableProducts ?>,
-    topProducts:         <?= json_encode($topProducts) ?>
-};
-</script>
-<script src="admin.js"></script>
-<script>
-generateDailyInsight();
-</script>
+    <!-- Pass PHP data to JS so the Claude call has real numbers -->
+    <script>
+    const DASHBOARD_DATA = {
+        totalOrders: <?= $totalOrders ?>,
+        processing: <?= $processing ?>,
+        revenue: <?= $revenue ?>,
+        activeProducts: <?= $activeProducts ?>,
+        unavailableProducts: <?= $unavailableProducts ?>,
+        topProducts: <?= json_encode($topProducts) ?>
+    };
+    </script>
+    <script src="admin.js"></script>
+    <script>
+    generateDailyInsight();
+    </script>
 </body>
+
 </html>
