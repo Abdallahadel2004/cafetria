@@ -20,7 +20,7 @@ require_once __DIR__ . '/db.php';
 // ── Helper ───────────────────────────────────────────────────────────────
 function go_home(string $role): void {
     if ($role === 'admin') {
-        header('Location: ../admin/admin/admin-dashboard.php');
+        header('Location: ../admin/admin-dashboard.php');
     } else {
         header('Location: ../api_login_and_UserPages/user-home.php');
     }

@@ -8,29 +8,28 @@ A modern, premium management system for a workplace cafeteria — built with **P
 
 ```
 php-cafetria/
-├── login.html                  # Entry point — all users start here
-├── style.css                   # Shared design system (CSS variables, layouts, components)
-├── script.js                   # Shared interactivity (animations, toggles, scroll effects)
-├── setup.sql                   # Database schema and seed data (Run this first!)
+├── login.php                   # Entry point — Secure Auth system
+├── db.php                      # Centralized PDO Database connection
+├── style.css                   # Global design system (Glassmorphism, Dark mode ready)
+├── script.js                   # Global interactivity & UX helpers
+├── setup.sql                   # Database schema and seed data
 │
-├── admin/admin/                # PHP Administrator backend
-│   ├── admin-dashboard.php     # Live Dashboard — real-time stats & incoming orders
-│   ├── admin-orders.php        # Orders Management — searchable table & card views
-│   ├── admin-products.php      # Product Catalog — full CRUD with AJAX toggles
-│   ├── admin-users.php         # User Management — account controls
-│   ├── admin-manual-order.php  # POS Interface — place orders for users
-│   ├── admin-checks.php        # Financial Reports — date/user filtered billing
-│   ├── _sidebar.php            # Shared sidebar component with Logout
-│   ├── db.php                  # Database connection (PDO)
-│   └── api/                    # AJAX endpoints for admin actions
+├── admin/                      # Consolidated Admin Panel
+│   ├── admin-dashboard.php     # Real-time Stats & Live Orders
+│   ├── admin-orders.php        # Searchable Order Management
+│   ├── admin-products.php      # Catalog Management (Full CRUD)
+│   ├── admin-users.php         # User Account Control
+│   ├── admin-manual-order.php  # POS Interface for Admins
+│   ├── admin-checks.php        # Financial & Sales Reporting
+│   ├── _sidebar.php            # Global Admin Navigation & Toast/Confirm Container
+│   ├── admin.js                # Admin-specific logic & Toast system
+│   └── api/                    # AJAX endpoints for admin operations
 │
-├── api_login_and_UserPages/    # PHP User backend & Auth
-│   ├── login.php               # Secure login handler
-│   ├── logout.php              # Session destruction
-│   ├── user-home.php           # User Portal — browse and order
-│   └── user-orders.php         # Order History — status tracking
-│
-└── admin/                      # Original HTML Mockups (Static)
+└── api_login_and_UserPages/    # Customer Facing Portal
+    ├── user-home.php           # Order Menu — browsing & cart system
+    ├── user-orders.php         # My Orders — status tracking
+    ├── user.js                 # User-specific logic & Toast system
+    └── api/                    # User-side Order API
 ```
 
 ---
@@ -38,15 +37,15 @@ php-cafetria/
 ## 🚀 Quick Start (Setup)
 
 1.  **Database Setup:**
-    *   Open phpMyAdmin or your MySQL client.
-    *   Import/Run the `php-cafetria/setup.sql` file.
-    *   This creates the `cafetria` database and seeds it with demo data.
-
+    *   Import/Run the `php-cafetria/setup.sql` file in your MySQL client.
+    *   Ensure your database matches the `fixing_database.md` master reference.
 2.  **Configuration:**
-    *   Verify database credentials in `admin/admin/db.php` and `api_login_and_UserPages/db.php`.
-    *   Default is `root` with no password.
+    *   Check `db.php` to ensure your DB credentials match your environment.
+3.  **Run:**
+    *   Use a local PHP server: `php -S localhost:8000` from the root directory.
+    *   Access via `http://localhost:8000/php-cafetria/login.php`.
 
-3.  **Login Credentials:**
+4.  **Login Credentials:**
     *   **Admin:** `admin@cafetria.com` / `admin123`
     *   **User:** `user@cafetria.com` / `user123`
 

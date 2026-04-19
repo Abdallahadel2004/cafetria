@@ -1,195 +1,223 @@
 <?php
-/**
- * admin-orders.php
- */
 session_start();
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     header('Location: ../login.php'); exit;
 }
+require_once '../db.php';
 
-require_once __DIR__ . '/../db.php';
+// ── Filters ──
+$dateFrom = $_GET['date_from'] ?? '';
+$dateTo   = $_GET['date_to']   ?? '';
+$statusF  = $_GET['status']    ?? '';
 
-$allowedStatuses = ['Processing', 'Delivered', 'Cancelled'];
-$filterStatus    = $_GET['status'] ?? '';
-if ($filterStatus && !in_array($filterStatus, $allowedStatuses)) {
-    $filterStatus = '';
-}
+$where  = ["1=1"];
+$params = [];
 
-$whereClause = $filterStatus
-    ? "WHERE o.status = " . $pdo->quote($filterStatus)
-    : "";
+if ($dateFrom) { $where[] = "DATE(o.created_at) >= ?"; $params[] = $dateFrom; }
+if ($dateTo)   { $where[] = "DATE(o.created_at) <= ?"; $params[] = $dateTo; }
+if ($statusF)  { $where[] = "o.status = ?"; $params[] = $statusF; }
 
-$orders = $pdo->query("
-    SELECT o.id, o.created_at, u.name AS customer,
-           o.items_summary, u.room, u.extension AS ext,
-           o.total, o.status
+$whereSQL = implode(' AND ', $where);
+
+// Fetch orders
+$orders = $pdo->prepare("
+    SELECT o.*, u.name AS customer, u.extension AS u_ext
     FROM   orders o
     JOIN   users  u ON u.id = o.user_id
-    $whereClause
+    WHERE  $whereSQL
     ORDER  BY o.created_at DESC
-")->fetchAll(PDO::FETCH_ASSOC);
+");
+$orders->execute($params);
+$ordersList = $orders->fetchAll(PDO::FETCH_ASSOC);
+
+function time_elapsed_string($datetime, $full = false) {
+    $now = new DateTime;
+    $ago = new DateTime($datetime);
+    $diff = $now->diff($ago);
+
+    $w = floor($diff->d / 7);
+    $d = $diff->d - ($w * 7);
+
+    $string = array(
+        'y' => 'year',
+        'm' => 'month',
+        'w' => 'week',
+        'd' => 'day',
+        'h' => 'hour',
+        'i' => 'min',
+        's' => 'sec',
+    );
+    
+    // Map the diff properties to our string keys
+    $values = array(
+        'y' => $diff->y,
+        'm' => $diff->m,
+        'w' => (int)$w,
+        'd' => (int)$d,
+        'h' => $diff->h,
+        'i' => $diff->i,
+        's' => $diff->s,
+    );
+
+    foreach ($string as $k => &$v) {
+        if ($values[$k]) {
+            $v = $values[$k] . ' ' . $v . ($values[$k] > 1 ? 's' : '');
+        } else {
+            unset($string[$k]);
+        }
+    }
+
+    if (!$full) $string = array_slice($string, 0, 1);
+    return $string ? implode(', ', $string) . ' ago' : 'just now';
+}
 
 $activePage = 'orders';
 ?>
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cafetria — Orders</title>
+    <title>Cafetria — Orders History</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap"
-        rel="stylesheet">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <style>
+        .order-items-list {
+            font-size: 0.85rem;
+            color: var(--on-surface-variant);
+            max-width: 250px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    </style>
 </head>
-
 <body>
 
-    <?php include '_sidebar.php'; ?>
+<?php include '_sidebar.php'; ?>
 
-    <main class="main">
-        <div class="topbar">
-            <h2>Orders</h2>
-            <div class="topbar-actions">
-                <div class="search-wrap">
-                    <span class="material-symbols-outlined search-icon">search</span>
-                    <input class="search-input" type="text" id="orders-search" placeholder="Search orders..."
-                        oninput="filterOrdersTable()">
+<main class="main">
+    <div class="topbar">
+        <h2>Orders History</h2>
+        <div class="topbar-actions">
+             <div class="search-box" style="position:relative">
+                <span class="material-symbols-outlined" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--on-surface-variant); font-size:20px">search</span>
+                <input type="text" id="orderSearch" class="form-control" placeholder="Search orders..." style="padding-left:40px; width:250px" oninput="filterOrders()">
+             </div>
+        </div>
+    </div>
+
+    <div class="page-content">
+        
+        <!-- Filters Card -->
+        <div class="section-card" style="margin-bottom:24px">
+            <form method="GET" style="display:flex; gap:16px; align-items:flex-end; padding:20px">
+                <div class="form-group" style="flex:1">
+                    <label class="form-label">From</label>
+                    <input type="date" name="date_from" class="form-control" value="<?= htmlspecialchars($dateFrom) ?>">
                 </div>
-                <select class="filter-select" onchange="location='admin-orders.php?status='+this.value">
-                    <option value="" <?= !$filterStatus ? 'selected' : '' ?>>All Statuses</option>
-                    <option value="Processing" <?= $filterStatus==='Processing' ? 'selected' : '' ?>>Processing</option>
-                    <option value="Delivered" <?= $filterStatus==='Delivered'  ? 'selected' : '' ?>>Delivered</option>
-                    <option value="Cancelled" <?= $filterStatus==='Cancelled'  ? 'selected' : '' ?>>Cancelled</option>
-                </select>
-                <div class="view-toggle">
-                    <button class="view-btn active" id="view-table-btn" onclick="setOrderView('table')">
-                        <span class="material-symbols-outlined">table_rows</span>
-                    </button>
-                    <button class="view-btn" id="view-card-btn" onclick="setOrderView('card')">
-                        <span class="material-symbols-outlined">grid_view</span>
-                    </button>
+                <div class="form-group" style="flex:1">
+                    <label class="form-label">To</label>
+                    <input type="date" name="date_to" class="form-control" value="<?= htmlspecialchars($dateTo) ?>">
                 </div>
-            </div>
+                <div class="form-group" style="flex:1">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-control">
+                        <option value="">All Statuses</option>
+                        <option value="Processing" <?= $statusF==='Processing'?'selected':'' ?>>Processing</option>
+                        <option value="Out for delivery" <?= $statusF==='Out for delivery'?'selected':'' ?>>Out for delivery</option>
+                        <option value="Delivered" <?= $statusF==='Delivered'?'selected':'' ?>>Delivered</option>
+                        <option value="Cancelled" <?= $statusF==='Cancelled'?'selected':'' ?>>Cancelled</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary" style="height:44px">Filter</button>
+                <a href="admin-orders.php" class="btn btn-secondary" style="height:44px; display:flex; align-items:center">Reset</a>
+            </form>
         </div>
 
-        <div class="page-content">
-            <div class="section-card" id="orders-table-view">
-                <div class="section-header">
-                    <div class="section-title">
-                        <span class="material-symbols-outlined">receipt_long</span>
-                        <?= $filterStatus ?: 'All' ?> Orders
-                    </div>
-                    <span class="badge badge-processing"><?= count($orders) ?> orders</span>
+        <!-- Orders Table -->
+        <div class="section-card">
+            <div class="section-header">
+                <div class="section-title">
+                    <span class="material-symbols-outlined">history</span>
+                    All Orders
                 </div>
-                <div class="table-wrap">
-                    <table id="orders-table">
-                        <thead>
-                            <tr>
-                                <th>Order #</th>
-                                <th>Date & Time</th>
-                                <th>Customer</th>
-                                <th>Items</th>
-                                <th>Room</th>
-                                <th>Ext</th>
-                                <th>Total</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="orders-table-body">
-                            <?php if (empty($orders)): ?>
-                            <tr>
-                                <td colspan="9" style="text-align:center;padding:2rem;color:var(--on-surface-variant)">
-                                    No orders found</td>
-                            </tr>
-                            <?php else: ?>
-                            <?php foreach ($orders as $o): ?>
-                            <tr data-status="<?= htmlspecialchars($o['status']) ?>"
-                                data-search="<?= strtolower(htmlspecialchars($o['customer'].' '.$o['items_summary'])) ?>">
-                                <td><strong style="color:var(--primary)">#<?= htmlspecialchars($o['id']) ?></strong>
-                                </td>
-                                <td style="font-size:0.78rem"><?= htmlspecialchars($o['created_at']) ?></td>
-                                <td><?= htmlspecialchars($o['customer']) ?></td>
-                                <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
-                                    <?= htmlspecialchars($o['items_summary']) ?></td>
-                                <td><?= htmlspecialchars($o['room']) ?></td>
-                                <td><?= htmlspecialchars($o['ext']) ?></td>
-                                <td><strong>EGP <?= number_format($o['total']) ?></strong></td>
-                                <td><span
-                                        class="badge badge-<?= strtolower(htmlspecialchars($o['status'])) ?>"><?= htmlspecialchars($o['status']) ?></span>
-                                </td>
-                                <td>
-                                    <div style="display:flex;gap:6px;align-items:center">
-                                        <?php if ($o['status'] === 'Processing'): ?>
-                                        <button class="btn btn-primary btn-sm"
-                                            onclick="deliverOrder(<?= (int)$o['id'] ?>, this)">
-                                            <span class="material-symbols-outlined">check</span>
-                                        </button>
-                                        <button class="btn btn-danger btn-sm"
-                                            onclick="cancelOrder(<?= (int)$o['id'] ?>, this)">
-                                            <span class="material-symbols-outlined">close</span>
-                                        </button>
-                                        <?php endif; ?>
-                                    </div>
-                                </td>
-                            </tr>
+                <span class="badge badge-category"><?= count($ordersList) ?> Total</span>
+            </div>
+            <div class="table-wrap">
+                <table id="ordersTable">
+                    <thead>
+                        <tr>
+                            <th>Order #</th>
+                            <th>Customer</th>
+                            <th>Items</th>
+                            <th>Location</th>
+                            <th>Total</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (empty($ordersList)): ?>
+                            <tr><td colspan="8" style="text-align:center; padding:40px; color:var(--on-surface-variant)">No orders found</td></tr>
+                        <?php else: ?>
+                            <?php foreach ($ordersList as $o): ?>
+                                <tr data-search="<?= strtolower(htmlspecialchars($o['customer'] . ' ' . $o['items_summary'])) ?>">
+                                    <td><strong style="color:var(--primary)">#<?= $o['id'] ?></strong></td>
+                                    <td><?= htmlspecialchars($o['customer']) ?></td>
+                                    <td><div class="order-items-list" title="<?= htmlspecialchars($o['items_summary']) ?>"><?= htmlspecialchars($o['items_summary'] ?: '—') ?></div></td>
+                                    <td>
+                                        <div style="font-weight:600">Room <?= htmlspecialchars($o['room']) ?></div>
+                                        <div style="font-size:0.7rem; opacity:0.6">Ext. <?= htmlspecialchars($o['u_ext']) ?></div>
+                                    </td>
+                                    <td><strong><?= number_format($o['total'], 2) ?> EGP</strong></td>
+                                    <td>
+                                        <div style="font-weight:600; color:var(--primary)"><?= time_elapsed_string($o['created_at']) ?></div>
+                                        <div style="font-size:0.7rem; opacity:0.6"><?= date('M j, g:i A', strtotime($o['created_at'])) ?></div>
+                                    </td>
+                                    <td>
+                                        <?php 
+                                            $s = strtolower(str_replace(' ', '-', $o['status']));
+                                            $badgeClass = 'badge-available'; // default
+                                            if ($s === 'processing') $badgeClass = 'badge-available';
+                                            if ($s === 'delivered') $badgeClass = 'badge-available';
+                                            if ($s === 'cancelled') $badgeClass = 'badge-unavailable';
+                                            if ($s === 'out-for-delivery') $badgeClass = 'badge-category';
+                                        ?>
+                                        <span class="badge <?= $badgeClass ?>"><?= $o['status'] ?></span>
+                                    </td>
+                                    <td>
+                                        <div style="display:flex; gap:6px">
+                                            <?php if ($o['status'] === 'Processing'): ?>
+                                                <button class="btn btn-primary btn-sm" onclick="deliverOrder(<?= $o['id'] ?>, this)">Deliver</button>
+                                                <button class="btn btn-danger btn-sm" onclick="cancelOrder(<?= $o['id'] ?>, this)">Cancel</button>
+                                            <?php endif; ?>
+                                        </div>
+                                    </td>
+                                </tr>
                             <?php endforeach; ?>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div id="orders-card-view" style="display:none">
-                <div class="orders-grid">
-                    <?php foreach ($orders as $o): ?>
-                    <div class="order-card" data-status="<?= htmlspecialchars($o['status']) ?>"
-                        data-search="<?= strtolower(htmlspecialchars($o['customer'].' '.$o['items_summary'])) ?>">
-                        <div class="order-card-header">
-                            <span class="order-number">#<?= htmlspecialchars($o['id']) ?></span>
-                            <span
-                                class="badge badge-<?= strtolower(htmlspecialchars($o['status'])) ?>"><?= htmlspecialchars($o['status']) ?></span>
-                        </div>
-                        <div class="order-card-body">
-                            <div class="order-meta"><span
-                                    class="material-symbols-outlined">person</span><?= htmlspecialchars($o['customer']) ?>
-                            </div>
-                            <div class="order-meta"><span class="material-symbols-outlined">meeting_room</span>Room
-                                <?= htmlspecialchars($o['room']) ?> · Ext. <?= htmlspecialchars($o['ext']) ?></div>
-                            <div class="order-meta"><span
-                                    class="material-symbols-outlined">schedule</span><?= htmlspecialchars($o['created_at']) ?>
-                            </div>
-                            <div class="order-items"><?= htmlspecialchars($o['items_summary']) ?></div>
-                            <div class="order-total">
-                                <span>Total</span>
-                                <span style="color:var(--primary)">EGP <?= number_format($o['total']) ?></span>
-                            </div>
-                            <?php if ($o['status'] === 'Processing'): ?>
-                            <div style="display:flex;gap:8px;margin-top:0.75rem">
-                                <button class="btn btn-primary btn-sm" style="flex:1"
-                                    onclick="deliverOrder(<?= (int)$o['id'] ?>, this)">
-                                    <span class="material-symbols-outlined">check</span>Deliver
-                                </button>
-                                <button class="btn btn-danger btn-sm" onclick="cancelOrder(<?= (int)$o['id'] ?>, this)">
-                                    <span class="material-symbols-outlined">close</span>
-                                </button>
-                            </div>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                    <?php endforeach; ?>
-                </div>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
             </div>
         </div>
-    </main>
-    <script src="admin.js"></script>
-</body>
+    </div>
+</main>
 
+<script src="admin.js"></script>
+<script>
+function filterOrders() {
+    const q = document.getElementById('orderSearch').value.toLowerCase();
+    const rows = document.querySelectorAll('#ordersTable tbody tr');
+    rows.forEach(row => {
+        if (!row.dataset.search) return;
+        row.style.display = row.dataset.search.includes(q) ? '' : 'none';
+    });
+}
+</script>
+</body>
 </html>

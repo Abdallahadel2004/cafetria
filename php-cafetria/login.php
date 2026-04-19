@@ -23,7 +23,7 @@ prepare('SELECT * FROM users WHERE email = ? LIMIT 1');
 $stmt->execute([$email]); $user = $stmt->fetch(); if ($user &&
 password_verify($password, $user['password'])) { $_SESSION['user_id'] =
 $user['id']; $_SESSION['name'] = $user['name']; $_SESSION['role'] =
-$user['role']; $_SESSION['room'] = $user['room_no']; header('Location: ' .
+$user['role']; $_SESSION['room'] = $user['room']; header('Location: ' .
 ($user['role'] === 'admin' ? 'admin/admin-dashboard.php' :
 'api_login_and_UserPages/user-home.php')); exit; } else { $error = 'Invalid email or password.'; }
 } } ?>
