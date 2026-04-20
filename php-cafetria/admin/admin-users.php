@@ -8,6 +8,7 @@ require_once '../db.php';
 $formError   = '';
 $formSuccess = '';
 $editUser    = null;
+ 
 
 // ── Delete ──
 if (isset($_GET['delete'])) {
@@ -24,7 +25,6 @@ if (isset($_GET['delete'])) {
     }
 }
 
-// ── Load for edit ──
 if (isset($_GET['edit'])) {
     $editUser = $pdo->query("SELECT * FROM users WHERE id=" . (int)$_GET['edit'])->fetch();
 }

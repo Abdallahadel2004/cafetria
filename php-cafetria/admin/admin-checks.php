@@ -5,6 +5,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 }
 require_once '../db.php';
 
+
 // ── Filters ──
 $dateFrom  = $_GET['date_from'] ?? '';
 $dateTo    = $_GET['date_to']   ?? '';
@@ -212,6 +213,7 @@ $activePage = 'checks';
             </form>
         </div>
 
+        
         <!-- Summary Stats -->
         <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:20px; margin-bottom:24px">
             <div class="section-card" style="padding:20px; display:flex; align-items:center; gap:16px">
